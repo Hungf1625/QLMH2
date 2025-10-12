@@ -43,7 +43,7 @@ $stmt->execute([$_GET['group_id']]);
 $groupmembers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $total_members = count($groupmembers);
 
-//Yêu cầu tham gia nhóm
+//Yêu cầu tham gia nhóm :D
 
 $user_id = $userInfo['id']; 
 
