@@ -177,7 +177,7 @@ $currentUser = $stmt->fetch(PDO::FETCH_ASSOC);
                                     echo '</td>';
                                     }else if(($currentUser['status'] == 'pending') && ($group['group_id'] == $currentUser['group_id'])){
                                     echo '<td class="text-center align-middle">';
-                                        echo '<a href="../controller/leaveGroup.php?group_id='.$group['group_id'].'" class="btn btn-outline-success btn-sm" disabled>Hủy yêu cầu</a>';
+                                        echo '<a href="../controller/leaveGroup.php?group_id='.$group['group_id'].'&user_id='.$userInfo['id'].'" class="btn btn-outline-success btn-sm" disabled>Hủy yêu cầu</a>';
                                     }
                                     else{
                                         echo'<td class="text-center align-middle">Bạn đã có nhóm hoặc đã gửi yêu cầu</td>';

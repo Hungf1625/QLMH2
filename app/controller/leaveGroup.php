@@ -7,7 +7,7 @@ $target_user_id = $_GET['user_id'] ?? '';
 if (empty($group_id) || empty($target_user_id)) {
     echo "<script>
         alert('Thiếu thông tin nhóm hoặc người dùng');
-        window.location.href = '../views/groupDetail.php?group_id=$group_id';
+        window.location.href = '../views/groups.php';
     </script>";
     exit;
 }

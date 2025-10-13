@@ -56,6 +56,7 @@ $stmt = $pdo->prepare($query);
 $stmt->execute([$group_id]);
 $request = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+print_r($member);
 
 ?>
 
@@ -102,16 +103,15 @@ $request = $stmt->fetchAll(PDO::FETCH_ASSOC);
         margin-top: 4px !important;
     }
 
-    .table_custom{
-    position: relative;
-    right: 80px;
+    .table_custom {
+        position: relative;
+        right: 15px;
     }
 
-    .table_custom_mobile{
+    .table_custom_mobile {
         position: relative;
         right: 0px !important;
     }
-
     </style>
 </head>
 
@@ -137,6 +137,48 @@ $request = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </nav>
     </header>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <!-- sidebar -->
+    <aside class="sidebar-container" id="sidebar">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="../../public/index.php">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../views/projects.php">
+                    <i class="bi bi-journal"></i> Đề tài
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="../views/groups.php">
+                    <i class="bi bi-people"></i> Nhóm & Thành viên
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../views/task.php">
+                    <i class="bi bi-list-task"></i> Công việc
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../views/deadline.php">
+                    <i class="bi bi-upload"></i> Mốc nộp bài
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../views/re-evaluation.php">
+                    <i class="bi bi-chat-dots"></i> Phúc khảo
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../views/report.php">
+                    <i class="bi bi-bar-chart"></i> Báo cáo
+                </a>
+            </li>
+        </ul>
+    </aside>
 
     <section>
         <!-- dropdown menu -->
@@ -182,63 +224,66 @@ $request = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     if(isset($member) && $member['role_in_group'] == 'leader'){
                         echo '<div class="col-md-4 group_detail_box" style="position:relative">';
                         echo '<div class="text-center mb-3">';
-                        echo '<img src="'.htmlspecialchars($group['avatar'] ?? 'default-group.jpg').'>"alt="ảnh nhóm" class="group-avatar img-fluid rounded" style="max-width: 200px; height: auto;">';
-                        echo '</div>';
-                    }
-                    else{
+                        echo '<img src="'.htmlspecialchars($group['avatar'] ?? 'default-group.jpg').'" alt="ảnh nhóm" class="group-avatar img-fluid rounded" style="max-width: 200px; height: auto;">';
+                        echo '</div>'; // Đóng div text-center
+                    } else {
                         echo '<div class="col-md-8 group_detail_box" style="position:relative">';
                         echo '<div class="text-center mb-3">';
-                        echo '<img src="'.htmlspecialchars($group['avatar'] ?? 'default-group.jpg').'>"alt="ảnh nhóm" class="group-avatar img-fluid rounded" style="max-width: 200px; height: auto;">';
-                        echo '</div>';
+                        echo '<img src="'.htmlspecialchars($group['avatar'] ?? 'default-group.jpg').'" alt="ảnh nhóm" class="group-avatar img-fluid rounded" style="max-width: 200px; height: auto;">';
+                        echo '</div>'; // Đóng div text-center
                     }
-                ?>
-                    <?php 
-                        if(isset($group_id) && !empty($group_id)){
-                            echo '<h6><strong>Tên nhóm:</strong></h6>';
-                            echo '<p>' . htmlspecialchars($group['groupname'] ?? 'Chưa có tên') . '</p>';
-
-                            echo '<h6><strong>Số thành viên:</strong></h6>';
-                            echo '<p>' . ($total_members ?? '0') . ' thành viên</p>';
-                            echo '<h6><strong>Nhóm trưởng:</strong></h6>';
-                            if(isset($leader)){
-                                echo '<p>'. $leader['fullname'] .'</p>';
-                            }
-                            // Thêm các thông tin khác nếu cần
-                            if(isset($group['description'])){
-                                echo '<h6>Mô tả:</h6>';
-                                echo '<p>' . htmlspecialchars($group['description']) . '</p>';
-                            }
-
-                            if(isset($group['created_at'])){
-                                echo '<h6><strong>Ngày tạo nhóm:</strong></h6>';
-                                echo '<p>' . date('d/m/Y', strtotime($group['created_at'])) . '</p>';
-                            }
-                        }
-                        if(isset($leader['role_in_group'])){
-                                if($leader['role_in_group'] == 'leader' && $leader['user_id'] == $userInfo['id']){
-                                    echo '<a href="../controller/deleteGroup.php?group_id=' . $_GET['group_id'] .'" style="position: absolute;
-                                            top: 290px;
-                                            right: 10px;
-                                            text-decoration: none;
-                                            border-bottom: 2px solid;
-                                            " onclick="return confirm(\'Bạn có chắc muốn xóa nhóm này? Hành động này không thể hoàn tác.\')" class="btn btn-danger">
-                                            Xóa nhóm</a>';
-                                }else{
-                                    echo '<a href="../controller/leaveGroup.php?group_id=' . $_GET['group_id'] .'&user_id='.$userInfo['id'].'" style="position: absolute;
-                                            top: 250px;
-                                            right: 10px;
-                                            text-decoration: none;
-                                            border-bottom: 2px solid;
-                                            " onclick="return confirm(\'Bạn có chắc muốn thoát nhóm này? Hành động này không thể hoàn tác.\')" class="btn btn-danger">
-                                            Thoát nhóm</a>';
-                                }
-                        }
                     ?>
-                </div>
-                <?php //ẩn yêu cầu tham gia nếu không phải là leader
+
+                <?php 
+                    if(isset($group_id) && !empty($group_id)){
+                        echo '<h6><strong>Tên nhóm:</strong></h6>';
+                        echo '<p>' . htmlspecialchars($group['groupname'] ?? 'Chưa có tên') . '</p>';
+
+                        echo '<h6><strong>Số thành viên:</strong></h6>';
+                        echo '<p>' . ($total_members ?? '0') . ' thành viên</p>';
+                        echo '<h6><strong>Nhóm trưởng:</strong></h6>';
+                        if(isset($leader)){
+                            echo '<p>'. $leader['fullname'] .'</p>';
+                        }
+                        // Thêm các thông tin khác nếu cần
+                        if(isset($group['description'])){
+                            echo '<h6>Mô tả:</h6>';
+                            echo '<p>' . htmlspecialchars($group['description']) . '</p>';
+                        }
+
+                        if(isset($group['created_at'])){
+                            echo '<h6><strong>Ngày tạo nhóm:</strong></h6>';
+                            echo '<p>' . date('d/m/Y', strtotime($group['created_at'])) . '</p>';
+                        }
+                    }
+                    
+                    if(isset($leader['role_in_group'])){
+                        if($leader['role_in_group'] == 'leader' && $leader['user_id'] == $userInfo['id']){
+                            echo '<a href="../controller/deleteGroup.php?group_id=' . $_GET['group_id'] .'" style="position: absolute;
+                                    top: 290px;
+                                    right: 10px;
+                                    text-decoration: none;
+                                    border-bottom: 2px solid;
+                                    " onclick="return confirm(\'Bạn có chắc muốn xóa nhóm này? Hành động này không thể hoàn tác.\')" class="btn btn-danger">
+                                    Xóa nhóm</a>';
+                        } else {
+                            echo '<a href="../controller/leaveGroup.php?group_id=' . $_GET['group_id'] .'&user_id='.$userInfo['id'].'" style="position: absolute;
+                                    top: 250px;
+                                    right: 10px;
+                                    text-decoration: none;
+                                    border-bottom: 2px solid;
+                                    " onclick="return confirm(\'Bạn có chắc muốn thoát nhóm này? Hành động này không thể hoàn tác.\')" class="btn btn-danger">
+                                    Thoát nhóm</a>';
+                        }
+                    }
+                    ?>
+            </div> <!-- Đóng div col-md-4 hoặc col-md-8 -->
+
+            <?php 
+                    // Ẩn yêu cầu tham gia nếu không phải là leader
                     if(isset($member) && $member['role_in_group'] == 'leader'){
-                        echo '<div class="col-md-6 group_detail_box_2nd">';
-                    echo '<h4><i class="bi bi-people-fill"></i>Yêu cầu tham gia nhóm</h4>';
+                        echo '<div class="col-md-4 group_detail_box_2nd">';
+                        echo '<h4><i class="bi bi-people-fill"></i> Yêu cầu tham gia nhóm</h4>';
                         if(isset($request) && !empty($request)){
                             echo '<table class="table table-hover">';
                             echo '<thead class="table-primary">';
@@ -266,26 +311,40 @@ $request = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         } else {
                             echo '<p class="text-muted text-center">Không có yêu cầu tham gia nào</p>';
                         }
+                        echo '</div>'; // Đóng div col-md-4 group_detail_box_2nd
                     }
-                ?>
-                </div>
-            </div>
+                    
+                    if(isset($member) && $member['role_in_group'] == 'leader'){
+                        echo '<div class="col-md-2 group_detail_box_2nd">';
+                        echo '<h4 style="text-align:center;">Đề tài</h4>';
+                        echo '<p class="text-muted text-center">Hiện đang không đăng ký đề tài nào</p>';
+                        echo '<a href="groups.php" class="btn btn-primary">Click vào đây để đi đăng ký đề tài</a>';
+                        echo '</div>'; 
+                    } else {
+                        echo '<div class="col-md-3 group_detail_box_2nd">';
+                        echo '<h4 style="text-align:center;">Đề tài</h4>';
+                        echo '<p class="text-muted text-center">Hiện đang không đăng ký đề tài nào</p>';
+                        echo '<a href="groups.php" class="btn btn-primary">Click vào đây để đi đăng ký đề tài</a>';
+                        echo '</div>'; 
+                    }
+                    ?>
+        </div> <!-- Đóng div row -->
 
-            <h2>Thành viên</h2>
-            <div class="card table_custom">
-                <div class="card-body">
-                    <table class="table table-striped table-bordered">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th scope="col" style="font-size: large; color: #dc3545;">MSSV</th>
-                                <th scope="col" style="font-size: large; color: #dc3545;">Họ và tên</th>
-                                <th scope="col" style="font-size: large; color: #dc3545;">Chức vụ</th>
-                                <th scope="col" style="font-size: large; color: #dc3545;">Tham gia nhóm ngày</th>
-                                <?php if(isset($member) && $member['role_in_group'] == 'leader'){echo '<th scope="col" style="font-size: large; color: #dc3545;">Thao tác</th>';}?>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php 
+        <h2>Thành viên</h2>
+        <div class="card table_custom">
+            <div class="card-body">
+                <table class="table table-striped table-bordered">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col" style="font-size: large; color: #dc3545;">MSSV</th>
+                            <th scope="col" style="font-size: large; color: #dc3545;">Họ và tên</th>
+                            <th scope="col" style="font-size: large; color: #dc3545;">Chức vụ</th>
+                            <th scope="col" style="font-size: large; color: #dc3545;">Tham gia nhóm ngày</th>
+                            <?php if(isset($member) && $member['role_in_group'] == 'leader'){echo '<th scope="col" style="font-size: large; color: #dc3545;">Thao tác</th>';}?>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php 
                             foreach($groupmembers as $groupmember){
                                 echo '<tr>';
                                     echo '<td>'.$groupmember['studentID'].'</td>';
@@ -319,22 +378,22 @@ $request = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 echo '</tr>';
                             }   
                             ?>
-                        </tbody>
-                    </table>
-                </div>
+                    </tbody>
+                </table>
             </div>
+        </div>
         </div>
     </main>
     <script>
-        function approveRequest(userId) {
-        if(confirm("Bạn có chắc muốn chấp nhận yêu cầu tham gia này?")) {
+    function approveRequest(userId) {
+        if (confirm("Bạn có chắc muốn chấp nhận yêu cầu tham gia này?")) {
             // Gửi request approve
             console.log("Approve user: " + userId);
         }
     }
-    
+
     function rejectRequest(userId) {
-        if(confirm("Bạn có chắc muốn từ chối yêu cầu tham gia này?")) {
+        if (confirm("Bạn có chắc muốn từ chối yêu cầu tham gia này?")) {
             // Gửi request reject
             console.log("Reject user: " + userId);
         }
