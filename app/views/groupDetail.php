@@ -56,7 +56,7 @@ $stmt = $pdo->prepare($query);
 $stmt->execute([$group_id]);
 $request = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-print_r($member);
+
 
 ?>
 

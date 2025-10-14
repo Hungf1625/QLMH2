@@ -127,77 +127,71 @@ require_once '../core/getUser.php';
         <div class="container-fluid">
             <div class="profile mt-5">
                 <table class="table table-striped table-hover">
-                    <tr>
-                        <th style="position:relative" colspan="3">
-                            <h1 style="text-align: center;">Danh sách đề tài</h1>
-                            <?php 
-                                if(isset($userInfo)){
-                                    $role = strtoupper(trim($userInfo['role_id']));
+                        <thead>
+                            <tr>
+                                <th colspan="5" style="position:relative; border: none;">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h1 class="mb-0" style="flex: 1; text-align: center;">Danh sách đề tài</h1>
+                                        <?php 
+                                            if(isset($userInfo)){
+                                                $role = strtoupper(trim($userInfo['role_id']));
 
-                                    if($role == 'GV'){
-                                        echo '<button class="btn btn-primary mb-3 addbutton" data-bs-toggle="modal" data-bs-target="#addGroupModal"><i class="bi bi-plus-circle"></i></button>';
-                                    }
-                                }
-                            ?>
-                            <div class="input-group">
-                                <input type="search" class="form-control rounded" placeholder="Nhập mã đề tài hoặc tên đề tài"
-                                    aria-label="Search" aria-describedby="search-addon" />
-                                <button type="button" class="btn btn-outline-primary"
-                                    data-mdb-ripple-init>search</button>
-                            </div>
-
-                        </th>
-                    </tr>
-                    <tr>
-                        <td style="font-size: large; color: red;"><strong>STT</strong></td>
-                        <td style="font-size: large; color: red;"><strong>Tên đề tài</strong></td>
-                    </tr>
-                    <tr>
-                        <td width="50" style="text-align: center;">1</td>
-                        <td>Nghiên cứu ứng dụng trí tuệ nhân tạo trong giáo dục</td>
-                        <td><a href="http://">Xem chi tiết</a></td>
-                    </tr>
-                    <tr>
-                        <td style="text-align: center;">2</td>
-                        <td>Phát triển hệ thống quản lý thư viện số</td>
-                        <td><a href="http://">Xem chi tiết</a></td>
-                    </tr>
-                    <tr>
-                        <td style="text-align: center;">3</td>
-                        <td>Xây dựng website thương mại điện tử cho doanh nghiệp vừa và nhỏ</td>
-                        <td><a href="http://">Xem chi tiết</a></td>
-                    </tr>
-                </table>
+                                                if($role == 'GV'){
+                                                    echo '<button class="btn btn-primary mb-3 addbutton" data-bs-toggle="modal" data-bs-target="#addProjectModal"><i class="bi bi-plus-circle"></i></button>';
+                                                }
+                                            }
+                                        ?>
+                                    </div>
+                                    <div class="input-group w-50 mx-auto">
+                                        <input type="search" class="form-control rounded"
+                                            placeholder="Nhập mã nhóm hoặc tên nhóm" aria-label="Search"
+                                            aria-describedby="search-addon" />
+                                        <button type="button" class="btn btn-outline-primary">Tìm kiếm</button>
+                                    </div>
+                                </th>
+                            </tr>
+                            <tr class="table-primary">
+                                <th width="80" class="text-center">STT</th>
+                                <th>Tên đề tài</th>
+                                <th>Tên nhóm đăng ký</th>
+                                <th width="150" class="text-center">Chi tiết</th>
+                                <th width="180" class="text-center">Đăng ký</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                        </tbody>
+                    </table>
             </div>
         </div>
 
         <!-- Button trigger modal -->
 
         <!-- Modal -->
-        <div class="modal fade" id="addGroupModal" tabindex="-1" aria-labelledby="addGroupModalLabel" aria-hidden="true">
+        <div class="modal fade" id="addProjectModal" tabindex="-1" aria-labelledby="addProjectModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="addGroupModalLabel">Thêm Đề Tài Mới</h5>
+                        <h5 class="modal-title" id="addProjectModalLabel">Thêm Đề Tài Mới</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <form action="../model/newGroup.php" method="POST">
+                    <form id="newPJ">
                         <div class="modal-body">
                             <div class="mb-3">
-                                <label for="projectName" class="form-label">Tên Đề Tài</label>
-                                <input type="text" class="form-control" id="projectName" name="projectName" required>
+                                <label for="projectname" class="form-label">Tên Đề Tài</label>
+                                <input type="text" class="form-control" id="projectname" name="projectname" required>
                             </div>
 
                             <!-- Thêm các trường khác nếu cần -->
                             <div class="mb-3">
-                                <label for="Description" class="form-label">Mô tả đề tài</label>
-                                <textarea class="form-control" id="Description" name="projectDescription"
+                                <label for="description" class="form-label">Mô tả đề tài</label>
+                                <textarea class="form-control" id="description" name="description"
                                     rows="3"></textarea>
                             </div>
 
                             <div class="mb-3">
-                                <label for="Deadline" class="form-label">Hạn chót</label>
-                                <input type="date" class="form-control" id="projectDeadline" name="Deadline">
+                                <label for="deadline" class="form-label">Hạn chót</label>
+                                <input type="date" class="form-control" id="deadline" name="deadline">
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -205,13 +199,39 @@ require_once '../core/getUser.php';
                             <button type="submit" class="btn btn-primary">Tạo đề tài</button>
                         </div>
                     </form>
+
                 </div>
             </div>
         </div>
 
     </main>
 
+    <script>
+        document.getElementById('newPJ').addEventListener('submit', async (e) => {
+            e.preventDefault();    
+            const formData = new FormData(e.target);
+            try {
+                const response = await fetch('../model/newProject.php', {
+                    method: 'POST',
+                    body: formData
+                });
 
+                const result = await response.json();
+                console.log(result);
+                
+                if (result.success) {
+                    alert(result.message);
+                } else {
+                    alert('Lỗi: ' + result.message);
+                }
+
+            } catch (err) {
+                console.log('Error:', err);
+                alert("Lỗi kết nối a");
+            }
+    });
+
+    </script>
 
 </body>
 
