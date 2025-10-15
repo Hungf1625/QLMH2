@@ -129,7 +129,7 @@ require_once '../core/getUser.php';
                 <table class="table table-striped table-hover">
                         <thead>
                             <tr>
-                                <th colspan="5" style="position:relative; border: none;">
+                                <th colspan="7" style="position:relative; border: none;">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h1 class="mb-0" style="flex: 1; text-align: center;">Danh sách đề tài</h1>
                                         <?php 
@@ -153,12 +153,14 @@ require_once '../core/getUser.php';
                             <tr class="table-primary">
                                 <th width="80" class="text-center">STT</th>
                                 <th>Tên đề tài</th>
+                                <th>Mô tả</th>
                                 <th>Tên nhóm đăng ký</th>
+                                <th>Hạn chót</th>
                                 <th width="150" class="text-center">Chi tiết</th>
                                 <th width="180" class="text-center">Đăng ký</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="projectContent">
                             
                         </tbody>
                     </table>
@@ -217,7 +219,6 @@ require_once '../core/getUser.php';
                 });
 
                 const result = await response.json();
-                console.log(result);
                 
                 if (result.success) {
                     alert(result.message);
@@ -227,10 +228,58 @@ require_once '../core/getUser.php';
 
             } catch (err) {
                 console.log('Error:', err);
-                alert("Lỗi kết nối a");
+                alert("Lỗi kết nối");
             }
     });
 
+    tableBodyContent();
+    setInterval(tableBodyContent, 2000) 
+    async function tableBodyContent(){
+        try{
+            const response = await fetch('../core/getProjects.php');
+
+            const result = await response.json();
+            console.log(result);
+
+            if(result.success){
+                renderTable(result.projects);
+            }else{
+                alert(result.message)
+            }
+
+        }catch(err){
+            console.log('error: ', err);
+            alert("lỗi");
+        }
+    }
+
+    function renderTable(projects) {
+    const tableBody = document.getElementById('projectContent');
+    tableBody.innerHTML = '';
+
+    if (!projects || projects.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center">Không có dự án nào</td>
+            </tr>
+        `;
+        return;
+    }
+    
+    projects.forEach(project => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${project.project_id}</td>
+            <td>${project.projectname}</td>
+            <td>${project.description}</td>
+            <td>${project.description || ''}</td>
+            <td>${project.deadline || ''}</td>
+            <td><button class="btn btn-primary">Chi tiết</button></td>
+            <td><button class="btn btn-primary">Đăng ký</button></td>
+        `;
+        tableBody.appendChild(row);
+    });
+    }
     </script>
 
 </body>
