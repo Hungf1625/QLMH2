@@ -4,6 +4,11 @@ require_once '../core/databasePDO.php';
 require_once '../core/checkIfLogin.php';
 require_once '../core/getUser.php';
 
+    $query = "SELECT * FROM projectdetail";
+    $stmt = $pdo->prepare($query);
+    $stmt->execute();
+    $projects = $stmt->fetchALL(PDO::FETCH_ASSOC);
+
 ?>
 
 <!DOCTYPE html>
@@ -19,7 +24,15 @@ require_once '../core/getUser.php';
     <script src="../../public/assets/script_test.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+    .tableButton1 {
+        margin-left: 31px;
+    }
 
+    .tableButton2 {
+        margin-left: 42px;
+    }
+    </style>
 </head>
 
 <body>
@@ -30,10 +43,14 @@ require_once '../core/getUser.php';
                     <img src="../../img/sv_logo_dashboard.png" alt="Logo" width="200px" height="40px"
                         class="d-inline-block align-text-top brand_logo">
                 </a>
-                <div class="d-flex ms-2 me-2 ms-auto"> 
+                <div class="d-flex ms-2 me-2 ms-auto">
                     <?php 
                         if (isset($userInfo)){
-                            echo '<img src="' . htmlspecialchars($userInfo['avatar']) . '" class="user_avatar" alt="user_avatar" width="40" height="40" class="rounded-circle">';
+                            if($userInfo['avatar'] == null){
+                                echo '<img src="../../img/dnc.png" class="user_avatar" alt="user_avatar" width="40" height="40" class="rounded-circle">';
+                            }else{
+                                echo '<img src="' . htmlspecialchars($userInfo['avatar']) . '" class="user_avatar" alt="user_avatar" width="40" height="40" class="rounded-circle">';
+                            }
                         }
                         ?>
                 </div>
@@ -127,50 +144,49 @@ require_once '../core/getUser.php';
         <div class="container-fluid">
             <div class="profile mt-5">
                 <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th colspan="7" style="position:relative; border: none;">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h1 class="mb-0" style="flex: 1; text-align: center;">Danh sách đề tài</h1>
-                                        <?php 
+                    <thead>
+                        <tr>
+                            <?php
+                                    '<th colspan="6" style="position:relative; border: none;">'
+                                ?>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h1 class="mb-0" style="flex: 1; text-align: center; padding-top: 10px;">Danh sách đề
+                                    tài</h1>
+                                <?php 
                                             if(isset($userInfo)){
                                                 $role = strtoupper(trim($userInfo['role_id']));
 
                                                 if($role == 'GV'){
-                                                    echo '<button class="btn btn-primary mb-3 addbutton" data-bs-toggle="modal" data-bs-target="#addProjectModal"><i class="bi bi-plus-circle"></i></button>';
+                                                    echo '<button class="btn btn-primary mb-3 addbuttonPJ" data-bs-toggle="modal" data-bs-target="#addProjectModal"><i class="bi bi-plus-circle"></i></button>';
                                                 }
                                             }
                                         ?>
-                                    </div>
-                                    <div class="input-group w-50 mx-auto">
-                                        <input type="search" class="form-control rounded"
-                                            placeholder="Nhập mã nhóm hoặc tên nhóm" aria-label="Search"
-                                            aria-describedby="search-addon" />
-                                        <button type="button" class="btn btn-outline-primary">Tìm kiếm</button>
-                                    </div>
-                                </th>
-                            </tr>
-                            <tr class="table-primary">
-                                <th width="80" class="text-center">STT</th>
-                                <th>Tên đề tài</th>
-                                <th>Mô tả</th>
-                                <th>Tên nhóm đăng ký</th>
-                                <th>Hạn chót</th>
-                                <th width="150" class="text-center">Chi tiết</th>
-                                <th width="180" class="text-center">Đăng ký</th>
-                            </tr>
-                        </thead>
-                        <tbody id="projectContent">
-                            
-                        </tbody>
-                    </table>
+                            </div>
+                            <div class="input-group w-50 mx-auto" style="padding-bottom: 5px;">
+                                <input type="search" class="form-control rounded"
+                                    placeholder="Nhập mã nhóm hoặc tên nhóm" aria-label="Search"
+                                    aria-describedby="search-addon" />
+                                <button type="button" class="btn btn-outline-primary">Tìm kiếm</button>
+                            </div>
+                            </th>
+                        </tr>
+                        <tr class="table-primary">
+                            <th class="text-center align-middle" width="80" class="text-center">ID</th>
+                            <th class="text-center align-middle">Tên đề tài</th>
+                            <th class="text-center align-middle">Giảng viên quản lý</th>
+                            <th>Hạn chót</th>
+                            <th class="text-center align-middle" width="150" class="text-center">Chi tiết</th>
+                            <th class="text-center align-middle" width="180" class="text-center">Đăng ký</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projectContent"></tbody>
+                </table>
             </div>
         </div>
 
-        <!-- Button trigger modal -->
-
         <!-- Modal -->
-        <div class="modal fade" id="addProjectModal" tabindex="-1" aria-labelledby="addProjectModalLabel" aria-hidden="true">
+        <div class="modal fade" id="addProjectModal" tabindex="-1" aria-labelledby="addProjectModalLabel"
+            aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -184,11 +200,9 @@ require_once '../core/getUser.php';
                                 <input type="text" class="form-control" id="projectname" name="projectname" required>
                             </div>
 
-                            <!-- Thêm các trường khác nếu cần -->
                             <div class="mb-3">
                                 <label for="description" class="form-label">Mô tả đề tài</label>
-                                <textarea class="form-control" id="description" name="description"
-                                    rows="3"></textarea>
+                                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
                             </div>
 
                             <div class="mb-3">
@@ -201,7 +215,35 @@ require_once '../core/getUser.php';
                             <button type="submit" class="btn btn-primary">Tạo đề tài</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
 
+        <div class="modal fade" id="addProjectDetail" tabindex="-1" aria-labelledby="addProjectDetail"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Thông tin đề tài</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <h5 class="modal-title" id="addProjectDetail">ID đề tài</h5>
+                        <div id="ID" class="text-muted"></div>
+                        <h5 class="modal-title" id="addProjectDetail">Tên đề tài</h5>
+                        <div id="Name" class="text-muted"></div>
+                        <h5 class="modal-title" id="addProjectDetail">Mô tả</h5>
+                        <div id="Description" class="text-muted"></div>
+                        <h5 class="modal-title" id="addProjectDetail">Giảng viên quản lý</h5>
+                        <div id="Lecturer" class="text-muted"></div>
+                        <h5 class="modal-title" id="addProjectDetail">Nhóm đăng ký</h5>
+                        <div id="Group" class="text-muted"></div>
+                        <?php
+                        if($userInfo['role_id'] == 'GV'){
+                            echo '<button id="delButton" class="btn btn-danger" onclick="">Xóa đề tài</button>';
+                        }
+                        ?>
+                    </div>
                 </div>
             </div>
         </div>
@@ -209,79 +251,146 @@ require_once '../core/getUser.php';
     </main>
 
     <script>
-        document.getElementById('newPJ').addEventListener('submit', async (e) => {
-            e.preventDefault();    
-            const formData = new FormData(e.target);
-            try {
-                const response = await fetch('../model/newProject.php', {
-                    method: 'POST',
-                    body: formData
-                });
+    document.getElementById('newPJ').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        try {
+            const response = await fetch('../model/newProject.php', {
+                method: 'POST',
+                body: formData
+            });
 
-                const result = await response.json();
-                
-                if (result.success) {
-                    alert(result.message);
-                } else {
-                    alert('Lỗi: ' + result.message);
-                }
+            const result = await response.json();
 
-            } catch (err) {
-                console.log('Error:', err);
-                alert("Lỗi kết nối");
+            if (result.success) {
+                alert(result.message);
+            } else {
+                alert('Lỗi: ' + result.message);
             }
+
+        } catch (err) {
+            console.log('Error:', err);
+            alert("Lỗi kết nối");
+        }
     });
 
     tableBodyContent();
-    setInterval(tableBodyContent, 2000) 
-    async function tableBodyContent(){
-        try{
+    setInterval(tableBodyContent, 2000);
+    async function tableBodyContent() {
+        try {
             const response = await fetch('../core/getProjects.php');
 
             const result = await response.json();
-            console.log(result);
 
-            if(result.success){
+            if (result.success) {
                 renderTable(result.projects);
-            }else{
+            } else {
                 alert(result.message)
             }
 
-        }catch(err){
+        } catch (err) {
             console.log('error: ', err);
             alert("lỗi");
         }
     }
 
     function renderTable(projects) {
-    const tableBody = document.getElementById('projectContent');
-    tableBody.innerHTML = '';
+        const tableBody = document.getElementById('projectContent');
+        tableBody.innerHTML = '';
 
-    if (!projects || projects.length === 0) {
-        tableBody.innerHTML = `
+        if (!projects || projects.length === 0) {
+            tableBody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center">Không có dự án nào</td>
+                <td colspan="6" class="text-center"><i class="bi bi-book"></i>Không có đề tài nào</td>
             </tr>
         `;
-        return;
-    }
-    
-    projects.forEach(project => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${project.project_id}</td>
-            <td>${project.projectname}</td>
-            <td>${project.description}</td>
-            <td>${project.description || ''}</td>
+            return;
+        }
+
+        projects.forEach(project => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+            <td class="text-center align-middle" >${project.project_id}</td>
+            <td class="text-center align-middle" >${project.projectname}</td>
+            <td class="text-center align-middle" >${project.fullname || ''}</td>
             <td>${project.deadline || ''}</td>
-            <td><button class="btn btn-primary">Chi tiết</button></td>
-            <td><button class="btn btn-primary">Đăng ký</button></td>
+            <td><button  class="btn btn-outline-primary btn-sm tableButton1" data-bs-toggle="modal" data-bs-target="#addProjectDetail" onclick="getProjects(${project.project_id})">Chi tiết</button></td>
+            <td><button class="btn btn-outline-primary btn-sm tableButton2" onclick="confirmRegister(${project.project_id}, '${project.projectname.replace(/'/g, "\\'")}')">Đăng ký</button></td>
         `;
-        tableBody.appendChild(row);
-    });
+            tableBody.appendChild(row);
+        });
+    }
+
+    async function getProjects(id) {
+        try {
+            const response = await fetch('../model/projectDetail.php?project_id=' + id);
+            const result = await response.json();
+            if (result.success) {
+                document.getElementById('ID').innerHTML = result.projects.project_id;
+                document.getElementById('Name').innerHTML = result.projects.projectname;
+                document.getElementById('Description').innerHTML = result.projects.description;
+                document.getElementById('Lecturer').innerHTML = result.projects.fullname;
+                if (!(result.projects.group_id == 0)) {
+                    document.getElementById('Group').innerHTML = result.projects.groupname;
+                } else {
+                    document.getElementById('Group').innerHTML = 'Chưa có nhóm đăng ký';
+                }
+                const delButton = document.getElementById('delButton');
+                if(delButton){
+                    delButton.addEventListener("click",async () =>{
+                        confirmDelete(result.projects.project_id,result.projects.projectname);
+                    })
+                }
+            } else {
+                alert('Lỗi: ' + result.message);
+            }
+        } catch (err) {
+            alert(err);
+        }
+    }
+
+    function confirmDelete(project_id,projectName) {
+        const isConfirmed = confirm(`Bạn có chắc chắn muốn xóa đề tài:\n"${projectName}"\n\nSau khi xóa không thể hủy!`);
+        
+        if (isConfirmed) {
+            deleteProject(project_id);
+        }
+    }
+    async function deleteProject(project_id){
+        try{
+            const response = await fetch(`../controller/deleteProject.php?project_id=${project_id}`);
+            const result = await response.json();
+            if(result.success){
+                alert(result.message);
+            }else{
+                alert(result.message);
+            }
+        }catch(err){
+            alert('' + err);
+        }
+    }
+
+    function confirmRegister(projectId, projectName) {
+        const isConfirmed = confirm(`Bạn có chắc chắn muốn đăng ký đề tài:\n"${projectName}"\n\nSau khi đăng ký không thể hủy!`);
+        
+        if (isConfirmed) {
+            registerProject(projectId);
+        }
+    }
+    async function registerProject(id) {
+        try {
+            const response = await fetch('../controller/registerProject.php?project_id=' + id);
+            const result = await response.json();
+            if (result.success) {
+                alert(result.message);
+            } else {
+                alert(result.message);
+            }
+        } catch (err) {
+            alert("Lỗi" + err);
+        }
     }
     </script>
-
 </body>
 
 </html>

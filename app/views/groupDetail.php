@@ -23,15 +23,13 @@ if(isset($_GET['group_id']) && !empty($_GET['group_id'])){
     die("Thiếu thông tin nhóm!");
 }
 
-
-// Sửa query để lấy leader của nhóm cụ thể
 $query = 'SELECT u.fullname, gm.* 
           FROM groupmember gm
           INNER JOIN users u ON gm.user_id = u.id
           WHERE gm.role_in_group = "leader" 
           AND gm.group_id = ?';
 $stmt = $pdo->prepare($query);
-$stmt->execute([$group_id]); // Sử dụng group_id thay vì userInfo['id']
+$stmt->execute([$group_id]);
 $leader = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $query1 = 'SELECT u.*, gm.role_in_group, gm.joined_at, gm.status, gm.user_id
@@ -43,11 +41,9 @@ $stmt->execute([$_GET['group_id']]);
 $groupmembers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $total_members = count($groupmembers);
 
-//Yêu cầu tham gia nhóm :D
 
 $user_id = $userInfo['id']; 
 
-// Kiểm tra xem đã là thành viên hoặc đã gửi yêu cầu chưa
 $query = 'SELECT gm.joined_at,gm.user_id,u.fullname
           FROM groupmember gm
           INNER JOIN users u ON gm.user_id = u.id
@@ -56,6 +52,13 @@ $stmt = $pdo->prepare($query);
 $stmt->execute([$group_id]);
 $request = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+$query = 'SELECT PD.*,U.fullname
+          FROM projectdetail PD
+          INNER JOIN users U ON U.id = PD.user_id
+          WHERE group_id = ?';
+$stmt = $pdo->prepare($query);
+$stmt->execute([$group_id]);
+$currentGroupProject = $stmt->fetch(PDO::FETCH_ASSOC);
 
 
 ?>
@@ -224,7 +227,11 @@ $request = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     if(isset($member) && $member['role_in_group'] == 'leader'){
                         echo '<div class="col-md-4 group_detail_box" style="position:relative">';
                         echo '<div class="text-center mb-3">';
-                        echo '<img src="'.htmlspecialchars($group['avatar'] ?? 'default-group.jpg').'" alt="ảnh nhóm" class="group-avatar img-fluid rounded" style="max-width: 200px; height: auto;">';
+                        if($group['groupimg'] == null){
+                            echo '<img src="../../img/dnc.png"alt="ảnh nhóm" class="group-avatar img-fluid rounded" style="max-width: 150px; height: auto;">';
+                        }else{
+                            echo '<img src="'.htmlspecialchars($group['avatar'] ?? 'default-group.jpg').'" alt="ảnh nhóm" class="group-avatar img-fluid rounded" style="max-width: 200px; height: auto;">';
+                        }
                         echo '</div>'; // Đóng div text-center
                     } else {
                         echo '<div class="col-md-8 group_detail_box" style="position:relative">';
@@ -260,7 +267,7 @@ $request = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     if(isset($leader['role_in_group'])){
                         if($leader['role_in_group'] == 'leader' && $leader['user_id'] == $userInfo['id']){
                             echo '<a href="../controller/deleteGroup.php?group_id=' . $_GET['group_id'] .'" style="position: absolute;
-                                    top: 290px;
+                                    top: 90%;
                                     right: 10px;
                                     text-decoration: none;
                                     border-bottom: 2px solid;
@@ -315,16 +322,24 @@ $request = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     }
                     
                     if(isset($member) && $member['role_in_group'] == 'leader'){
-                        echo '<div class="col-md-2 group_detail_box_2nd">';
-                        echo '<h4 style="text-align:center;">Đề tài</h4>';
-                        echo '<p class="text-muted text-center">Hiện đang không đăng ký đề tài nào</p>';
-                        echo '<a href="groups.php" class="btn btn-primary">Click vào đây để đi đăng ký đề tài</a>';
-                        echo '</div>'; 
-                    } else {
+                        if(isset($currentGroupProject['project_id'])){
+                            echo '<div class="col-md-2 group_detail_box_2nd">';
+                                echo '<h5 style="text-align:center;">Đề tài</h5>';
+                                echo '<p class=" ">Tên đề tài:<br>'.$currentGroupProject['projectname'].'</p>';
+                                echo '<p class=" ">Giảng viên phụ trách:<br>'.$currentGroupProject['fullname'].'</p>';
+                                echo '<p class=" ">Hạn chót:<br>'.$currentGroupProject['deadline'].'</p>';
+                            echo '</div>'; 
+                        }else{
+                            echo '<div class="col-md-2 group_detail_box_2nd">';
+                                echo '<h4 style="text-align:center;">Đề tài</h4>';
+                                echo '<p class="text-muted text-center">Hiện đang không đăng ký đề tài nào</p>';
+                                echo '<a href="projects.php" class="btn btn-primary">Click vào đây để đi đăng ký đề tài</a>';
+                            echo '</div>'; 
+                        }
+                    }else {
                         echo '<div class="col-md-3 group_detail_box_2nd">';
-                        echo '<h4 style="text-align:center;">Đề tài</h4>';
-                        echo '<p class="text-muted text-center">Hiện đang không đăng ký đề tài nào</p>';
-                        echo '<a href="groups.php" class="btn btn-primary">Click vào đây để đi đăng ký đề tài</a>';
+                            echo '<h4 style="text-align:center;">Đề tài</h4>';
+                            echo '<p class="text-muted text-center">Hiện đang không đăng ký đề tài nào</p>';
                         echo '</div>'; 
                     }
                     ?>

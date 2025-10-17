@@ -1,13 +1,16 @@
 <?php
-// projects_api.php
+
 header('Content-Type: application/json');
 session_start();
 require_once '../core/databasePDO.php';
 
 try {
-    $query = "SELECT * FROM projectdetail WHERE user_id = ? ORDER BY created_at DESC";
+    $query = "SELECT PD.*, U.fullname 
+              FROM projectdetail PD
+              INNER JOIN users U ON PD.user_id = U.id
+              ORDER BY PD.created_at ";
     $stmt = $pdo->prepare($query);
-    $stmt->execute([$_SESSION['user_id']]);
+    $stmt->execute();
     $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     echo json_encode([

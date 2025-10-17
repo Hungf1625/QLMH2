@@ -29,14 +29,15 @@ if(isset($_GET['group_id'])) {
             $pdo->beginTransaction();
             
             try {
-                // 1. Xóa tất cả thành viên trong nhóm
                 $delete_members = $pdo->prepare("DELETE FROM groupmember WHERE group_id = ?");
                 $delete_members->execute([$group_id]);
                 
-                // 2. Xóa nhóm
                 $delete_group = $pdo->prepare("DELETE FROM groups WHERE group_id = ?");
                 $delete_group->execute([$group_id]);
                 
+                $current_project = $pdo->prepare("UPDATE projectdetail SET group_id = 0 WHERE group_id = ?");
+                $current_project->execute([$group_id]);
+
                 $pdo->commit();
                 
                 echo "<script>

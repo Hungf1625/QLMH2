@@ -426,6 +426,13 @@ body {
     margin: 10px;
 }
 
+.addbuttonPJ{
+    position: absolute;
+    top: 80px;
+    right: 46px;
+    margin: 10px;
+}
+
 .detailButton{
     position: absolute;
     right: 10px;

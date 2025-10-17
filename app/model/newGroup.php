@@ -28,7 +28,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             // Bắt đầu transaction
             $conn->begin_transaction();
             
-            // Câu 1: Tạo nhóm mới
             $stmt1 = $conn->prepare("INSERT INTO groups (groupname, created_at) VALUES (?, NOW())");
             if (!$stmt1) {
                 throw new Exception("Lỗi prepare statement 1: " . $conn->error);
@@ -39,10 +38,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 throw new Exception("Lỗi execute statement 1: " . $stmt1->error);
             }
             
-            // Lấy ID vừa được tạo
             $newGroupId = $conn->insert_id;
             
-            // Câu 2: Thêm user làm leader của nhóm
             $stmt2 = $conn->prepare("INSERT INTO groupmember (group_id, user_id, role_in_group, status, joined_at) VALUES (?, ?, 'leader', 'approved', NOW())");
             if (!$stmt2) {
                 throw new Exception("Lỗi prepare statement 2: " . $conn->error);
@@ -53,7 +50,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 throw new Exception("Lỗi execute statement 2: " . $stmt2->error);
             }
             
-            // Commit transaction
             $conn->commit();
             
             echo "<script>
@@ -63,7 +59,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             exit();
             
         } catch (Exception $e) {
-            // Rollback nếu có lỗi
+
             $conn->rollback();
             
             echo "<script>
@@ -72,7 +68,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             </script>";
             exit();
         } finally {
-            // Đóng statements
+
             if ($stmt1) {
                 $stmt1->close();
             }

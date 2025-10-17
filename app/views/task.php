@@ -34,7 +34,11 @@ require_once '../core/getUser.php';
                 <div class="d-flex ms-2 me-2 ms-auto"> 
                     <?php 
                         if (isset($userInfo)){
-                            echo '<img src="' . htmlspecialchars($userInfo['avatar']) . '" class="user_avatar" alt="user_avatar" width="40" height="40" class="rounded-circle">';
+                            if($userInfo['avatar'] == null){
+                                echo '<img src="../../img/dnc.png" class="user_avatar" alt="user_avatar" width="40" height="40" class="rounded-circle">';
+                            }else{
+                                echo '<img src="' . htmlspecialchars($userInfo['avatar']) . '" class="user_avatar" alt="user_avatar" width="40" height="40" class="rounded-circle">';
+                            }
                         }
                         ?>
                 </div>

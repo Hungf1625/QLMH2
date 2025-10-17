@@ -1,7 +1,6 @@
 <?php 
 header('Content-Type: application/json');
 
-// Bật output buffering
 ob_start();
 
 session_start();
@@ -28,13 +27,25 @@ try {
         $description = trim($_POST['description'] ?? '');
         $deadline = trim($_POST['deadline'] ?? '');
         
-        // Validate
         if(empty($projectname)) {
             throw new Exception('Vui lòng điền tên dự án.');
         }
 
         if(empty($userInfo['id'])) {
             throw new Exception('Thông tin người dùng không hợp lệ.');
+        }
+
+        if(!empty($deadline)) {
+            $currentDateTime = date('Y-m-d H:i:s');
+            $deadlineDateTime = $deadline;
+            
+            if (strlen($deadline) <= 10) {
+                $deadlineDateTime = $deadline . ' 23:59:59';
+            }
+            
+            if (strtotime($deadlineDateTime) <= strtotime($currentDateTime)) {
+                throw new Exception('Hạn chót không được bằng hoặc nhỏ hơn thời gian hiện tại.');
+            }
         }
 
         $pdo->beginTransaction();
@@ -51,7 +62,7 @@ try {
         ob_clean();
         echo json_encode([
             'success' => true,
-            'message' => 'Tạo dự án thành công!',
+            'message' => 'Tạo đề tài thành công!',
             'project_id' => $newProjectId
         ]);
         exit;

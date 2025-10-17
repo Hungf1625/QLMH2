@@ -5,7 +5,17 @@ require_once '../core/checkIfLogin.php';
 require_once '../core/getUser.php';
 
 //querry chỉ để truy vấn tất cả group đang có trong db không điều kiện
-$group = "SELECT * from groups";
+$group = "SELECT 
+                G.group_id,
+                G.groupname,
+                G.created_at,
+                PD.project_id,
+                PD.projectname,
+                PD.deadline,
+                PD.description
+              FROM `groups` G
+              LEFT JOIN projectdetail PD ON PD.group_id = G.group_id
+              ORDER BY G.groupname, PD.projectname";
 $stmt = $pdo->prepare($group);
 $stmt->execute(); 
 $groups = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -15,6 +25,8 @@ $querry = "SELECT * from groupmember
 $stmt = $pdo->prepare($querry);
 $stmt->execute([$_SESSION['user_id']]); 
 $currentUser = $stmt->fetch(PDO::FETCH_ASSOC);
+
+
 ?>
 
 <!DOCTYPE html>
@@ -43,7 +55,11 @@ $currentUser = $stmt->fetch(PDO::FETCH_ASSOC);
                 <div class="d-flex ms-2 me-2 ms-auto">
                     <?php 
                         if (isset($userInfo)){
-                            echo '<img src="' . htmlspecialchars($userInfo['avatar']) . '" class="user_avatar" alt="user_avatar" width="40" height="40" class="rounded-circle">';
+                            if($userInfo['avatar'] == null){
+                                echo '<img src="../../img/dnc.png" class="user_avatar" alt="user_avatar" width="40" height="40" class="rounded-circle">';
+                            }else{
+                                echo '<img src="' . htmlspecialchars($userInfo['avatar']) . '" class="user_avatar" alt="user_avatar" width="40" height="40" class="rounded-circle">';
+                            }
                         }
                         ?>
                 </div>
@@ -158,7 +174,7 @@ $currentUser = $stmt->fetch(PDO::FETCH_ASSOC);
                             <tr class="table-primary">
                                 <th width="80" class="text-center">STT</th>
                                 <th>Tên nhóm</th>
-                                <th>Tên đề tài</th>
+                                <th>Đề tài đăng ký</th>
                                 <th width="150" class="text-center">Chi tiết</th>
                                 <th width="180" class="text-center">Yêu cầu tham gia</th>
                             </tr>
@@ -169,7 +185,7 @@ $currentUser = $stmt->fetch(PDO::FETCH_ASSOC);
                                 echo '<tr>';
                                 echo '<td class="text-center align-middle">' . ($index + 1) . '</td>';
                                 echo '<td class="align-middle fw-bold">' . htmlspecialchars($group['groupname']) . '</td>';
-                                echo '<td class="align-middle">' . (isset($group['topic']) && !empty($group['topic']) ? htmlspecialchars($group['topic']) : '<span class="text-muted">Chưa có đề tài</span>') . '</td>';
+                                echo '<td class="align-middle">' . (isset($group['projectname']) && !empty($group['projectname']) ? htmlspecialchars($group['projectname']) : '<span class="text-muted">Chưa có đề tài</span>') . '</td>';
                                 if(isset($currentUser) && !empty($currentUser)){
                                     if(($currentUser['group_id'] == $group['group_id']) && !($currentUser['status'] == 'pending')){
                                     echo '<td class="text-center align-middle">';

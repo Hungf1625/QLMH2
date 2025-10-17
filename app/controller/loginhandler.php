@@ -31,8 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     // Regenerate session ID để tránh session fixation
                     session_regenerate_id(true);
                     
-                    echo "<script>
-                        alert('Đăng nhập thành công!');
+                    echo "<script>                     
                         window.location.href = '../../public/index.php'; // Chuyển hướng về trang chính
                     </script>";
                     exit();

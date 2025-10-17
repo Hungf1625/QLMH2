@@ -42,7 +42,11 @@ $groups = $stmt->fetch(PDO::FETCH_ASSOC);
                 <div class="d-flex ms-2 me-2 ms-auto">
                     <?php 
                         if (isset($userInfo)){
-                            echo '<img src="' . htmlspecialchars($userInfo['avatar']) . '" class="user_avatar" alt="user_avatar" width="40" height="40" class="rounded-circle">';
+                            if($userInfo['avatar'] == null){
+                                echo '<img src="../img/dnc.png" class="user_avatar" alt="user_avatar" width="40" height="40" class="rounded-circle">';
+                            }else{
+                                echo '<img src="' . htmlspecialchars($userInfo['avatar']) . '" class="user_avatar" alt="user_avatar" width="40" height="40" class="rounded-circle">';
+                            }
                         }
                         ?>
                 </div>
@@ -149,7 +153,11 @@ $groups = $stmt->fetch(PDO::FETCH_ASSOC);
                                 <div class="d-flex justify-content-center align-items-center">
                                     <?php 
                                         if(isset($userInfo) && isset($userInfo['avatar'])) {
-                                            echo '<img class="profile_img mt-1" src="' . htmlspecialchars($userInfo['avatar']) . '" alt="User Avatar">';
+                                            if($userInfo['avatar'] == null){
+                                                echo '<img class="profile_img mt-1" src="../img/dnc.png">';
+                                            }else{
+                                                echo '<img class="profile_img mt-1" src="' . htmlspecialchars($userInfo['avatar']) . '" alt="User Avatar">';
+                                            }
                                         } 
                                         else {
                                             // Hiển thị ảnh mặc định nếu không có avatar
