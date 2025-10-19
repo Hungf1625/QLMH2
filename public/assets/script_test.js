@@ -93,16 +93,16 @@ window.addEventListener('resize', addResolutionClass);
 function taskCal(){
     const uncompletedTasks = document.querySelectorAll('.task_content').length;
     const completedTasks = document.querySelectorAll('.task_content_completed').length;
-
+    const submittedTasks = document.querySelectorAll('.task_content_submitted').length;
     
     // Chart JS - Sử dụng dữ liệu thực tế từ task calculation
     var options = {
-        series: [completedTasks, uncompletedTasks],
+        series: [completedTasks, uncompletedTasks, submittedTasks],
         chart: {
             type: 'donut',
         },
-        labels: ['Đã hoàn thành', 'Chưa hoàn thành'],
-        colors: ['#00E396', '#FF4560'],
+        labels: ['Đã hoàn thành', 'Chưa hoàn thành', 'Đã nộp'],
+        colors: ['#00E396', 'red', '#008FFB'],
         responsive: [{
             breakpoint: 480,
             options: {
@@ -126,6 +126,3 @@ function taskCal(){
     window.taskChart = new ApexCharts(chartElement, options);
     window.taskChart.render();
 }
-
-// Gọi function
-taskCal();

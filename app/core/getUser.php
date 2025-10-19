@@ -1,5 +1,5 @@
 <?php 
-    try {
+try {
     $user = "SELECT 
                 U.*, 
                 PD.project_id,
@@ -8,9 +8,9 @@
                 GM.role_in_group,
                 G.groupname
              FROM users U
-             LEFT JOIN projectdetail PD ON PD.user_id = U.id
              LEFT JOIN groupmember GM ON GM.user_id = U.id 
              LEFT JOIN groups G ON G.group_id = GM.group_id
+             LEFT JOIN projectdetail PD ON PD.group_id = G.group_id 
              WHERE U.id = ?";
     
     $stmt = $pdo->prepare($user);
@@ -26,5 +26,4 @@
     echo "Lỗi database: " . $e->getMessage();
     exit;
 }
-
 ?>

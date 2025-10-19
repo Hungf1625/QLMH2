@@ -131,54 +131,28 @@ require_once '../core/getUser.php';
     <main class="main-content">
         <div class="row mt-5">
             <div class="col-md-7">
-                <div class="task_header d-flex justify-content-between align-items-center">
-                    <!--Task header-->
+                <div class="task_header d-flex justify-content-between align-items-center mb-1">
                     <h2 class="ms-2">Tasks</h2>
-                    <a href="" class="new_task me-2">New task</a>
-                </div>
-
-                <div class="task_body mt-3">
-                    <div class="task_content pl-10px">
-                        <a href="edit_task.php" class="edit_icon">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <div class="task_information">
-                            <h4 class="task_title">
-                                uiiiiiiaaaaaa
-                            </h4>
-                            <p class="task_description">
-                                asdakshdikashdaskldjaskldasdklajldlwkaklsd.
-                            </p>
-                            <div class="d-flex justify-content-between">
-                                <a href="" class="detail_button">Xem chi tiết</a>
-                                <div class="task_status">Pending</div>
+                    <ul class="list-group list-group-horizontal">
+                        <li style="list-style: none;"><button class="new_task me-2" data-bs-toggle="modal" data-bs-target="#addNewTask" onclick="">New task</button></li>
+                        <li style="list-style: none;">
+                            <div class="dropdown">
+                                <button class="new_task dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Lọc theo
+                                </button>
+                                <ul class="dropdown-menu p-0" aria-labelledby="dropdownMenuButton1">
+                                    <li class="w-100"><button class="btn btn-warning w-100 rounded-0 text-center" onclick="handleClick(this)" value="all">Tất cả</button></li>
+                                    <li class="w-100"><button class="btn btn-danger w-100 rounded-0 text-center" onclick="handleClick(this)" value="pending">Chưa nộp</button></li>
+                                    <li class="w-100"><button class="btn btn-primary w-100 rounded-0 text-center" onclick="handleClick(this)" value="submitted">Đã nộp</button></li>
+                                    <li class="w-100"><button class="btn btn-success w-100 rounded-0 text-center" onclick="handleClick(this)" value="completed">Đã duyệt</button></li>
+                                </ul>
                             </div>
-                        </div>
-                    </div>
+                        </li>
+                    </ul>
+                </div>     
+                <div class="task_list mt-3">
                 </div>
-
-                <div class="task_body mt-3">
-                    <div class="task_content_completed pl-10px">
-                        <a href="edit_task.php" class="edit_icon" >
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <div class="task_information">
-                            <h4 class="task_title">
-                                uiiiiiiaaaaaa
-                            </h4>
-                            <p class="task_description">
-                                asdakshdikashdaskldjaskldasdklajldlwkaklsd.
-                            </p>
-                            <div class="d-flex justify-content-between">
-                                <a href="" class="detail_button">Xem chi tiết</a>
-                                <div class="task_status_completed">Completed</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
-
 
             <div class="col-md-5">
                 <div class="progress_header">
@@ -198,9 +172,252 @@ require_once '../core/getUser.php';
                 </div>
             </div>
         </div>
+
+        <div class="modal fade" id="addNewTask" tabindex="-1" aria-labelledby="addNewTask"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Thông tin đề tài</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form class="new_task_form">
+                            <div class="mb-3">
+                                <label for="tasktitle" class="form-label">Tiêu đề công việc</label>
+                                <input type="text" class="form-control" id="tasktitle" name="tasktitle" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Mô tả công việc</label>
+                                <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="deadline" class="form-label">Hạn hoàn thành</label>
+                                <input type="date" class="form-control" id="deadline" name="deadline" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary new_task">Tạo công việc</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <div class="modal fade" id="taskDetail" tabindex="-1" aria-labelledby="taskDetail"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Thông tin công việc</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <h5 class="modal-title" id="taskDetail">Tiêu đề công việc</h5>
+                        <div id="taskTitle" class="text-muted"></div>
+                        <h5 class="modal-title" id="taskDetail">Mô tả</h5>
+                        <div id="Description" class="text-muted"></div>
+                        <h5 class="modal-title" id="taskDetail">Người tạo</h5>
+                        <div id="Creator" class="text-muted"></div>
+                        <h5 class="modal-title" id="taskDetail">Ngày tạo</h5>
+                        <div id="Created_at" class="text-muted"></div>
+                        <h5 class="modal-title" id="taskDetail">Hạn chót</h5>
+                        <div id="Deadline" class="text-muted"></div>
+                        <?php
+                        if($userInfo['role_in_group'] == 'leader'){
+                            echo '<button id="delButton" class="btn btn-danger " onclick="" style="padding-top:10px;padding: 10px;margin-top: 10px;">Xóa đề tài</button>';
+                        }
+                        ?>
+                    </div>
+                </div>
+            </div>
+        </div>                   
+
     </main>
 
+    <script>
 
+    
+
+    async function handleClick(button){
+        const value = button.value;
+        try{
+            await fetchTasks(value);
+        }catch(err){
+            console.log('Lỗi khi lọc công việc:', err);
+        }
+    }
+    async function fetchTasks(statusFilter = null){
+        try {
+            if(!<?php echo isset($userInfo['group_id']) && isset($userInfo['project_id']) ? 'true' : 'false' ?>) {
+                const tasksContainer = document.querySelector('.task_list');
+                tasksContainer.innerHTML = '<p class="text-muted">Bạn cần tham gia nhóm và dự án trước.</p>';
+                return;
+            }
+            
+            const group_id = <?php echo $userInfo['group_id'] ?? 'null' ?>;
+            const project_id = <?php echo $userInfo['project_id'] ?? 'null' ?>;
+            
+            const response = await fetch(`../controller/taskAction.php?group_id=${group_id}&action=getTasks&project_id=${project_id}`);
+            const result = await response.json();
+            
+            if(result.success){
+                renderTasks(result.tasks, statusFilter);
+                taskCal();
+            } else {
+                console.error('Lỗi:', result.message);
+            }
+        } catch(err) {
+            console.error('Lỗi khi lấy công việc:', err);
+        }
+    }
+
+    function renderTasks(tasks, statusFilter) {
+        const tasksContainer = document.querySelector('.task_list');
+        tasksContainer.innerHTML = '';
+        
+        if (!tasks || tasks.length === 0) {
+            tasksContainer.innerHTML = '<p class="text-muted">Không có công việc nào.</p>';
+            return;
+        }
+        
+        let filteredTasks = tasks;
+        if (statusFilter && statusFilter !== 'all') {
+            filteredTasks = tasks.filter(task => task.status === statusFilter);
+        }
+        
+        if (filteredTasks.length === 0) {
+            tasksContainer.innerHTML = '<p class="text-muted">Không có công việc nào ở trạng thái này.</p>';
+            return;
+        }
+        
+        filteredTasks.forEach(task => {
+            const taskElement = document.createElement('div');
+            if(task.status === 'completed'){
+                taskElement.className = 'task_body mt-3';
+                taskElement.innerHTML = `
+                    <div class="task_content_completed pl-10px">
+                        <a href="edit_task.php?task_id=${task.task_id}" class="edit_icon" title="Upload file">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <div class="task_information">
+                            <h4 class="task_title">${task.tasktitle}</h4>
+                            <p class="task_description">${task.description}</p>
+                            <div class="d-flex justify-content-between">
+                                <button class="task_detailbutton" data-bs-toggle="modal" data-bs-target="#taskDetail" onclick="getTask(${task.task_id}, ${task.project_id}, ${task.group_id})">Xem chi tiết</button>
+                                <div class="task_status_completed">${task.status}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }else if(task.status === 'pending'){
+                taskElement.className = 'task_body mt-3';
+                taskElement.innerHTML = `
+                    <div class="task_content pl-10px">
+                        <a href="edit_task.php?task_id=${task.task_id}" class="edit_icon" title="Upload file">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <div class="task_information">
+                            <h4 class="task_title">${task.tasktitle}</h4>
+                            <p class="task_description">${task.description}</p>
+                            <div class="d-flex justify-content-between">
+                                <button class="task_detailbutton" data-bs-toggle="modal" data-bs-target="#taskDetail" onclick="getTask(${task.task_id}, ${task.project_id}, ${task.group_id})">Xem chi tiết</button>
+                                <div class="task_status">${task.status}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }else{
+                taskElement.className = 'task_body mt-3';
+                taskElement.innerHTML = `
+                    <div class="task_content_submitted pl-10px">
+                        <a href="edit_task.php?task_id=${task.task_id}" class="edit_icon" title="Upload file">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <div class="task_information">
+                            <h4 class="task_title">${task.tasktitle}</h4>
+                            <p class="task_description">${task.description}</p>
+                            <div class="d-flex justify-content-between">
+                                <button class="task_detailbutton" data-bs-toggle="modal" data-bs-target="#taskDetail" onclick="getTask(${task.task_id}, ${task.project_id}, ${task.group_id})">Xem chi tiết</button>
+                                <div class="task_status_submitted">${task.status}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            tasksContainer.appendChild(taskElement);
+        });
+    }
+
+    async function getTask(task_id, project_id, group_id) {
+    try {
+        if (!task_id || !project_id || !group_id) {
+            throw new Error('Thiếu thông tin task');
+        }
+
+        const response = await fetch(`../controller/taskAction.php?task_id=${task_id}&project_id=${project_id}&group_id=${group_id}&action=getTaskDetail`);
+        const result = await response.json();
+        
+        if (result.success && result.task) {
+
+            const created = new Date(result.task.created_at).toLocaleDateString('vi-VN');
+            const deadline = new Date(result.task.deadline).toLocaleDateString('vi-VN');
+            
+
+            document.getElementById('taskTitle').innerText = result.task.tasktitle;
+            document.getElementById('Description').innerText = result.task.description;
+            document.getElementById('Creator').innerText = result.task.creator_name;
+            document.getElementById('Created_at').innerText = created;
+            document.getElementById('Deadline').innerText = deadline;
+            
+
+            const delButton = document.getElementById('delButton');
+                if (delButton) {
+                    delButton.onclick = () => deleteTask(task_id, group_id);
+                }
+            } else {
+                throw new Error(result.message || 'Không thể lấy thông tin task');
+            }
+        } catch (err) {
+            console.error('Lỗi:', err);
+            alert('Lỗi khi lấy chi tiết công việc: ' + err.message);
+        }
+    }
+
+        const newTaskButton = document.querySelector('.new_task_form');
+        if(newTaskButton) {
+            newTaskButton.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const group_id = <?php echo $userInfo['group_id'] ?? 'null' ?>;
+                const project_id = <?php echo $userInfo['project_id'] ?? 'null' ?>;
+                
+                if(!group_id || !project_id) {
+                    alert('Bạn cần tham gia nhóm và dự án trước khi tạo công việc');
+                    return;
+                }
+                
+                await newTask(e, group_id, project_id);
+            });
+        }
+        async function newTask(e,group_id,project_id){
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            try{
+                const response = await fetch(`../controller/taskAction.php?group_id=${group_id}&&action=newTask&&project_id=${project_id}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if(result.success){
+                    alert(result.message);
+                    fetchTasks(); 
+                    e.target.reset();  
+                }else{
+                    alert(result.message);
+                }
+            }catch(err){
+                alert('Lỗi khi tạo công việc mới: ' + err.message);
+            }
+        }
+    </script>
 </body>
 
 </html>

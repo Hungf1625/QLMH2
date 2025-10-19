@@ -32,6 +32,11 @@ require_once '../core/getUser.php';
     .tableButton2 {
         margin-left: 42px;
     }
+
+    /* .detailButton{
+        padding: 10px;
+        margin-top: 10px;
+    } */
     </style>
 </head>
 
@@ -240,7 +245,8 @@ require_once '../core/getUser.php';
                         <div id="Group" class="text-muted"></div>
                         <?php
                         if($userInfo['role_id'] == 'GV'){
-                            echo '<button id="delButton" class="btn btn-danger" onclick="">Xóa đề tài</button>';
+                            echo '<button id="delButton" class="btn btn-danger " onclick="" style="padding-top:10px;padding: 10px;margin-top: 10px;">Xóa đề tài</button>';
+                            echo '<button id="delGroupButton" class="btn btn-danger" style="position: relative; right: -200px;padding: 10px;margin-top: 10px;" onclick="">Xóa nhóm khỏi đề tài</button>';
                         }
                         ?>
                     </div>
@@ -275,7 +281,7 @@ require_once '../core/getUser.php';
     });
 
     tableBodyContent();
-    setInterval(tableBodyContent, 2000);
+    setInterval(tableBodyContent, 4000);
     async function tableBodyContent() {
         try {
             const response = await fetch('../core/getProjects.php');
@@ -302,8 +308,7 @@ require_once '../core/getUser.php';
             tableBody.innerHTML = `
             <tr>
                 <td colspan="6" class="text-center"><i class="bi bi-book"></i>Không có đề tài nào</td>
-            </tr>
-        `;
+            </tr>`;
             return;
         }
 
@@ -315,8 +320,7 @@ require_once '../core/getUser.php';
             <td class="text-center align-middle" >${project.fullname || ''}</td>
             <td>${project.deadline || ''}</td>
             <td><button  class="btn btn-outline-primary btn-sm tableButton1" data-bs-toggle="modal" data-bs-target="#addProjectDetail" onclick="getProjects(${project.project_id})">Chi tiết</button></td>
-            <td><button class="btn btn-outline-primary btn-sm tableButton2" onclick="confirmRegister(${project.project_id}, '${project.projectname.replace(/'/g, "\\'")}')">Đăng ký</button></td>
-        `;
+            <td><button class="btn btn-outline-primary btn-sm tableButton2" onclick="confirmRegister(${project.project_id}, '${project.projectname.replace(/'/g, "\\'")}')">Đăng ký</button></td>`;
             tableBody.appendChild(row);
         });
     }
@@ -336,9 +340,13 @@ require_once '../core/getUser.php';
                     document.getElementById('Group').innerHTML = 'Chưa có nhóm đăng ký';
                 }
                 const delButton = document.getElementById('delButton');
-                if(delButton){
+                const delGroupButton = document.getElementById('delGroupButton');
+                if(delButton && delGroupButton){
                     delButton.addEventListener("click",async () =>{
-                        confirmDelete(result.projects.project_id,result.projects.projectname);
+                        confirmDeletePJ(result.projects.project_id,result.projects.projectname);
+                    })
+                    delGroupButton.addEventListener("click", async () =>{
+                        confirmDeleteG(result.projects.project_id,result.projects.projectname);
                     })
                 }
             } else {
@@ -349,16 +357,24 @@ require_once '../core/getUser.php';
         }
     }
 
-    function confirmDelete(project_id,projectName) {
+    function confirmDeletePJ(project_id,projectName) {
         const isConfirmed = confirm(`Bạn có chắc chắn muốn xóa đề tài:\n"${projectName}"\n\nSau khi xóa không thể hủy!`);
-        
+        const action = 'deleteProject';
         if (isConfirmed) {
-            deleteProject(project_id);
+            deleteProject(project_id,action);
         }
     }
-    async function deleteProject(project_id){
+    function confirmDeleteG(project_id,projectName) {
+        const isConfirmed = confirm(`Bạn có chắc chắn muốn xóa nhóm khỏi đề tài:\n"${projectName}"\n\nSau khi xóa không thể hủy!`);
+        const action = 'deleteGroup';
+        if (isConfirmed) {
+            deleteProject(project_id,action);
+        }
+    }
+
+    async function deleteProject(project_id,action){
         try{
-            const response = await fetch(`../controller/deleteProject.php?project_id=${project_id}`);
+            const response = await fetch(`../controller/deleteProject.php?project_id=${project_id}&action=${action}`);
             const result = await response.json();
             if(result.success){
                 alert(result.message);

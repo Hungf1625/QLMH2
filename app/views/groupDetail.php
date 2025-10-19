@@ -336,11 +336,20 @@ $currentGroupProject = $stmt->fetch(PDO::FETCH_ASSOC);
                                 echo '<a href="projects.php" class="btn btn-primary">Click vào đây để đi đăng ký đề tài</a>';
                             echo '</div>'; 
                         }
-                    }else {
+                    }else{
+                        if(isset($currentGroupProject['project_id'])){
                         echo '<div class="col-md-3 group_detail_box_2nd">';
-                            echo '<h4 style="text-align:center;">Đề tài</h4>';
-                            echo '<p class="text-muted text-center">Hiện đang không đăng ký đề tài nào</p>';
+                            echo '<h5 style="text-align:center;">Đề tài</h5>';
+                            echo '<p class=" ">Tên đề tài:<br>'.$currentGroupProject['projectname'].'</p>';
+                            echo '<p class=" ">Giảng viên phụ trách:<br>'.$currentGroupProject['fullname'].'</p>';
+                            echo '<p class=" ">Hạn chót:<br>'.$currentGroupProject['deadline'].'</p>';
                         echo '</div>'; 
+                        }else{
+                            echo '<div class="col-md-3 group_detail_box_2nd">';
+                                echo '<h4 style="text-align:center;">Đề tài</h4>';
+                                echo '<p class="text-muted text-center">Hiện đang không đăng ký đề tài nào</p>';
+                            echo '</div>'; 
+                        }
                     }
                     ?>
         </div> <!-- Đóng div row -->
