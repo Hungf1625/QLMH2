@@ -36,6 +36,9 @@ switch($action) {
     case 'getTaskDetail':
         getTaskDetail($task_id, $project_id, $group_id);
         break;
+    case 'delTask':
+        delTask($task_id, $project_id, $group_id);
+        break;
     default:
         echo json_encode([
             'success' => false,
@@ -157,6 +160,25 @@ function newTask($group_id, $project_id) {
         echo json_encode([
             'success' => false,
             'message' => 'Lỗi khi tạo công việc: ' . $e->getMessage()
+        ]);
+    }
+}
+
+function delTask($task_id, $project_id, $group_id){
+    global $pdo;
+    try {
+        $deleteQuery = "DELETE FROM tasks WHERE task_id = ? AND project_id = ? AND group_id = ?";
+        $deleteStmt = $pdo->prepare($deleteQuery);
+        $deleteStmt->execute([$task_id, $project_id, $group_id]);
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Xóa công việc thành công'
+        ]);
+    } catch (Exception $e) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Lỗi khi xóa công việc: ' . $e->getMessage()
         ]);
     }
 }

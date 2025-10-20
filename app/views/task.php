@@ -223,7 +223,7 @@ require_once '../core/getUser.php';
                         <div id="Deadline" class="text-muted"></div>
                         <?php
                         if($userInfo['role_in_group'] == 'leader'){
-                            echo '<button id="delButton" class="btn btn-danger " onclick="" style="padding-top:10px;padding: 10px;margin-top: 10px;">Xóa đề tài</button>';
+                            echo '<button id="delTaskButton" class="btn btn-danger " onclick="" style="padding-top:10px;padding: 10px;margin-top: 10px;">Xóa công việc</button>';
                         }
                         ?>
                     </div>
@@ -367,6 +367,9 @@ require_once '../core/getUser.php';
             document.getElementById('Creator').innerText = result.task.creator_name;
             document.getElementById('Created_at').innerText = created;
             document.getElementById('Deadline').innerText = deadline;
+            document.getElementById('delTaskButton').addEventListener('click', async () => {
+                await deleteTask(result.task.task_id,result.task.group_id,result.task.project_id);
+            })
             
 
             const delButton = document.getElementById('delButton');
@@ -417,6 +420,24 @@ require_once '../core/getUser.php';
                 alert('Lỗi khi tạo công việc mới: ' + err.message);
             }
         }
+
+        async function deleteTask(task_id, group_id,project_id){
+            try{
+                const response = await fetch(`../controller/taskAction.php?task_id=${task_id}&&group_id=${group_id}&&action=delTask&&project_id=${project_id}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                if(result.success){
+                    alert(result.message);
+                    fetchTasks(); 
+                }else{
+                    alert(result.message);
+                }
+            }catch(err){
+                alert('Lỗi khi xóa công việc: ' + err.message);
+            }
+        }
+
     </script>
 </body>
 

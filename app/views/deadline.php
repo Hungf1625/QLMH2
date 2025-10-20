@@ -30,17 +30,21 @@ require_once '../core/getUser.php';
                     <img src="../../img/sv_logo_dashboard.png" alt="Logo" width="200px" height="40px"
                         class="d-inline-block align-text-top brand_logo">
                 </a>
-                    <div class="d-flex ms-2 ms-auto">
-                        <?php 
+                <div class="d-flex ms-2 me-2 ms-auto"> 
+                    <?php 
                         if (isset($userInfo)){
-                            echo '<img src="' . htmlspecialchars($userInfo['avatar']) . '" class="user_avatar" alt="user_avatar" width="40" height="40" class="rounded-circle">';
+                            if($userInfo['avatar'] == null){
+                                echo '<img src="../../img/dnc.png" class="user_avatar" alt="user_avatar" width="40" height="40" class="rounded-circle">';
+                            }else{
+                                echo '<img src="' . htmlspecialchars($userInfo['avatar']) . '" class="user_avatar" alt="user_avatar" width="40" height="40" class="rounded-circle">';
+                            }
                         }
                         ?>
-                    </div>
+                </div>
                 <button class="navbar-toggler navbarbutton" type="button" onclick="toggleSidebar()">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                
+
             </div>
         </nav>
     </header>
