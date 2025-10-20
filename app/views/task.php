@@ -244,8 +244,9 @@ $project_id = $userInfo['project_id'] ?? null;
                             </div>
                         </div>
                         <?php
-                        if($userInfo['role_in_group'] == 'leader'){
+                        if($userInfo['role_in_group'] === 'leader'){
                             echo '<button id="delTaskButton" class="btn btn-danger " onclick="" style="padding-top:10px;padding: 10px;margin-top: 10px;">Xóa công việc</button>';
+                            echo '<button id="submitTask" class="btn btn-success" onclick="" style="padding-top:10px;padding: 10px;margin-top: 10px;position: relative;margin-left: 2px;">Đã hoàn thành</button>';
                         }
                         ?>
                     </div>
@@ -284,6 +285,21 @@ $project_id = $userInfo['project_id'] ?? null;
     </main>
 
     <script>
+
+    async function submitTaskF(task_id,project_id,group_id){
+        try{
+            const response = await fetch(`../controller/taskAction.php?task_id=${task_id}&group_id=${group_id}&project_id=${project_id}&action=submitTask`)
+            const result = await response.json();
+            if(result.success){
+                alert(result.message);
+                fetchTask();
+            }else{
+                alert(result.message)
+            }
+        }catch(err){
+            console.log('Lỗi', err);
+        }
+    }
 
     function getTaskId(task_id) {
         document.getElementById('hiddenTaskId').value = task_id;
@@ -336,6 +352,7 @@ $project_id = $userInfo['project_id'] ?? null;
             console.log('Lỗi khi lọc công việc:', err);
         }
     }
+
     async function fetchTasks(statusFilter = null) {
         try {
             if (!<?php echo isset($userInfo['group_id']) && isset($userInfo['project_id']) ? 'true' : 'false' ?>) {
@@ -350,7 +367,6 @@ $project_id = $userInfo['project_id'] ?? null;
             const response = await fetch(
                 `../controller/taskAction.php?group_id=${group_id}&action=getTasks&project_id=${project_id}`);
             const result = await response.json();
-
             if (result.success) {
                 renderTasks(result.tasks, statusFilter);
                 taskCal();
@@ -462,30 +478,37 @@ $project_id = $userInfo['project_id'] ?? null;
             if (!task_id || !project_id || !group_id) {
                 throw new Error('Thiếu thông tin task');
             }
-
             const response = await fetch(
                 `../controller/taskAction.php?task_id=${task_id}&project_id=${project_id}&group_id=${group_id}&action=getTaskDetail`
                 );
             const result = await response.json();
-
             if (result.success && result.task) {
-
+  
                 const created = new Date(result.task.created_at).toLocaleDateString('vi-VN');
                 const deadline = new Date(result.task.deadline).toLocaleDateString('vi-VN');
-
 
                 document.getElementById('taskTitle').innerText = result.task.tasktitle;
                 document.getElementById('Description').innerText = result.task.description;
                 document.getElementById('Creator').innerText = result.task.creator_name;
                 document.getElementById('Created_at').innerText = created;
                 document.getElementById('Deadline').innerText = deadline;
-                document.getElementById('delTaskButton').addEventListener('click', async () => {
-                    await deleteTask(result.task.task_id, result.task.group_id, result.task.project_id);
-                })
+                if(result.task.role_in_group === 'leader'){
+                    document.getElementById('submitTask').addEventListener('click', async (e) =>{
+                        e.preventDefault();
+                        e.stopPropagation();
+                        await submitTaskF(result.task.task_id,result.task.project_id,result.task.group_id);
+                    })
+                    document.getElementById('delTaskButton').addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        await deleteTask(result.task.task_id, result.task.project_id, result.task.group_id);
+                    });
+                }
+            
                 if(result.task.files.filepath){
+                    
                     const fileLink = document.createElement('a');
                     fileLink.href = result.task.files.filepath;
-                    console.log(fileLink.href);
                     fileLink.innerText = 'Tải tệp';
                     fileLink.target = '_blank';
                     document.getElementById('filePath').innerHTML = '';
@@ -496,10 +519,6 @@ $project_id = $userInfo['project_id'] ?? null;
                 document.getElementById('fileUploader').innerText = result.task.files.uploader_name || 'Chưa có người tải lên';
                 document.getElementById('fileType').innerText = result.task.files.filetype || 'Chưa có loại tệp';
 
-                const delButton = document.getElementById('delButton');
-                if (delButton) {
-                    delButton.onclick = () => deleteTask(task_id, group_id);
-                }
             } else {
                 throw new Error(result.message || 'Không thể lấy thông tin task');
             }
@@ -524,6 +543,7 @@ $project_id = $userInfo['project_id'] ?? null;
             await newTask(e, group_id, project_id);
         });
     }
+
     async function newTask(e, group_id, project_id) {
         e.preventDefault();
         const formData = new FormData(e.target);
@@ -546,7 +566,7 @@ $project_id = $userInfo['project_id'] ?? null;
         }
     }
 
-    async function deleteTask(task_id, group_id, project_id) {
+    async function deleteTask(task_id, project_id, group_id) {
         try {
             const response = await fetch(
                 `../controller/taskAction.php?task_id=${task_id}&&group_id=${group_id}&&action=delTask&&project_id=${project_id}`, {
@@ -556,6 +576,7 @@ $project_id = $userInfo['project_id'] ?? null;
             if (result.success) {
                 alert(result.message);
                 fetchTasks();
+                taskCal();
             } else {
                 alert(result.message);
             }

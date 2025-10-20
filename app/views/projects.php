@@ -282,6 +282,7 @@ require_once '../core/getUser.php';
 
     tableBodyContent();
     setInterval(tableBodyContent, 4000);
+    
     async function tableBodyContent() {
         try {
             const response = await fetch('../core/getProjects.php');

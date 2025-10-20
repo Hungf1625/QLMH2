@@ -42,6 +42,9 @@ switch($action) {
     case 'uploadFile':
         uploadFile($task_id, $project_id, $group_id);
         break;
+    case 'submitTask':
+        submitTask($task_id, $project_id, $group_id);
+        break;
     default:
         echo json_encode([
             'success' => false,
@@ -52,30 +55,32 @@ switch($action) {
 function getTasks($group_id, $project_id) {
     global $pdo;
     try {
-        // Dùng LEFT JOIN để lấy cả tasks không có file
-        $selectQuery = "SELECT 
-                        T.*,
-                        TF.taskfile_id, 
-                        TF.filepath, 
-                        TF.user_id as file_uploader_id,
-                        TF.filename
-                    FROM tasks T
-                    LEFT JOIN taskfiles TF ON T.task_id = TF.task_id
-                    WHERE T.group_id = ? AND T.project_id = ? 
-                    ORDER BY T.created_at DESC";
         
+        $selectQuery = "SELECT 
+                    T.*,
+                    TF.taskfile_id, 
+                    TF.filepath, 
+                    TF.user_id as file_uploader_id,
+                    TF.filename,
+                    GM.role_in_group
+                FROM tasks T
+                LEFT JOIN taskfiles TF ON T.task_id = TF.task_id
+                LEFT JOIN groupmember GM ON GM.user_id = ? AND GM.group_id = T.group_id
+                WHERE T.group_id = ? AND T.project_id = ? 
+                ORDER BY T.created_at DESC";
+
         $selectStmt = $pdo->prepare($selectQuery);
-        $selectStmt->execute([$group_id, $project_id]);
+        $selectStmt->execute([$_SESSION['user_id'], $group_id, $project_id]);
         $tasks = $selectStmt->fetchAll(PDO::FETCH_ASSOC);
         
         foreach($tasks as &$task){
             if(!isset($task['status']) || empty($task['status'])){
                 $task['status'] = 'pending'; 
             }
-
-            if($task['taskfile_id'] !== null){
+            if($task['taskfile_id'] !== null && $task['status'] === 'pending'){
                 $task['status'] = 'submitted';
             }
+       
         }
         unset($task); 
         
@@ -94,22 +99,26 @@ function getTasks($group_id, $project_id) {
 function getTaskDetail($task_id, $project_id, $group_id) {
     global $pdo;
     try {
-        // Lấy thông tin task cơ bản
-        $selectQuery = "SELECT t.*, u.fullname as creator_name
-                       FROM tasks t
-                       LEFT JOIN users u ON t.user_id = u.id
-                       WHERE t.task_id = ? 
-                       AND t.project_id = ? 
-                       AND t.group_id = ?";
+       
+        $selectQuery = "SELECT 
+                    t.*, 
+                    u.fullname as creator_name,
+                    gm.role_in_group
+                FROM tasks t
+                LEFT JOIN users u ON t.user_id = u.id
+                LEFT JOIN groupmember gm ON gm.user_id = ? AND gm.group_id = t.group_id
+                WHERE t.task_id = ? 
+                AND t.project_id = ? 
+                AND t.group_id = ?";
         $selectStmt = $pdo->prepare($selectQuery);
-        $selectStmt->execute([$task_id, $project_id, $group_id]);
+        $selectStmt->execute([$_SESSION['user_id'], $task_id, $project_id, $group_id]);
         $task = $selectStmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$task) {
             throw new Exception("Không tìm thấy task");
         }
 
-        // Lấy danh sách files của task
+        
         $fileQuery = "SELECT 
                         tf.*,
                         u.fullname as uploader_name,
@@ -272,6 +281,10 @@ function uploadFile($task_id, $project_id, $group_id){
             throw new Exception('Lỗi khi lưu file');
         }
 
+        // Bắt đầu transaction để đảm bảo tính nhất quán
+        $pdo->beginTransaction();
+
+        // 1. Insert file vào bảng taskfiles
         $insertQuery = "INSERT INTO taskfiles (
             task_id, 
             project_id, 
@@ -299,14 +312,73 @@ function uploadFile($task_id, $project_id, $group_id){
 
         $file_id = $pdo->lastInsertId();
 
+        // 2. CẬP NHẬT STATUS CỦA TASK THÀNH 'submitted'
+        $updateTaskQuery = "UPDATE tasks SET status = ? WHERE task_id = ? AND project_id = ? AND group_id = ?";
+        $updateTaskStmt = $pdo->prepare($updateTaskQuery);
+        $updateTaskStmt->execute(['submitted', $task_id, $project_id, $group_id]);
+
+        // Commit transaction
+        $pdo->commit();
+
         echo json_encode([
             'success' => true,
             'message' => 'Upload file thành công!',
             'file_id' => $file_id,
-            'filename' => $newFileName
+            'filename' => $newFileName,
+            'task_updated' => true,
+            'new_status' => 'submitted'
         ]);
 
     } catch (Exception $e) {
+        // Rollback transaction nếu có lỗi
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        
+        echo json_encode([
+            'success' => false,
+            'message' => $e->getMessage()
+        ]);
+    }
+}
+
+function submitTask($task_id, $project_id, $group_id){
+    global $pdo;
+    
+    try {
+        $query1 = 'SELECT * FROM tasks WHERE task_id = ? AND project_id = ? AND group_id = ?';
+        $stmt1 = $pdo->prepare($query1);
+        $stmt1->execute([$task_id, $project_id, $group_id]);
+        $currentTask = $stmt1->fetch(PDO::FETCH_ASSOC);
+
+        if (!$currentTask) {
+            throw new Exception('Không tìm thấy công việc');
+        }
+        if ($currentTask['status'] === 'submitted') {
+            $updateQuery = 'UPDATE tasks SET status = ? WHERE task_id = ? AND project_id = ? AND group_id = ?';
+            $updateStmt = $pdo->prepare($updateQuery);
+            $updateStmt->execute(['completed', $task_id, $project_id, $group_id]);
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'Xác nhận hoàn thành công việc thành công!'
+            ]);
+            
+        } else if ($currentTask['status'] === 'pending' || $currentTask['status'] === 'completed') {
+            $message = '';
+            if ($currentTask['status'] === 'pending') {
+                $message = 'Công việc chưa được nộp file. Không thể xác nhận hoàn thành.';
+            } else if ($currentTask['status'] === 'completed') {
+                $message = 'Công việc đã được hoàn thành trước đó.';
+            }
+            
+            throw new Exception($message);
+            
+        } else {
+            throw new Exception('Trạng thái công việc không hợp lệ: ' . $currentTask['status']);
+        }
+
+    } catch(Exception $e) {
         echo json_encode([
             'success' => false,
             'message' => $e->getMessage()

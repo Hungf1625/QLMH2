@@ -10,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $role_id = trim($_POST['role_id'] ?? 'SV'); 
     $confirm_password = trim($_POST['confirm_password'] ?? ''); 
     $gender = trim($_POST['gender']);
-
+    $fullname = uniqid().time();
     $errors = [];
     
     if (empty($username)) {
@@ -80,7 +80,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
     
-    $insert_sql = "INSERT INTO users (id, username, password, role_id, gender) VALUES (?, ?, ?, ?, ?)";
+    $insert_sql = "INSERT INTO users (id, username,fullname , password, role_id, gender) VALUES (?, ?, ? , ?, ?, ?)";
     $stmt2 = $conn->prepare($insert_sql);
     
     if (!$stmt2) {
@@ -91,7 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
     
-    $stmt2->bind_param("sssss", $id, $username, $hashed_password, $role_id, $gender);
+    $stmt2->bind_param("ssssss", $id, $username,$fullname , $hashed_password , $role_id, $gender);
     
     if ($stmt2->execute()) {
 
