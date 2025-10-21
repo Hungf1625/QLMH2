@@ -38,12 +38,18 @@ switch($action) {
         break;
     case 'delTask':
         delTask($task_id, $project_id, $group_id);
+        logTaskActivity($task_id, $project_id, $group_id, 'delTask');
         break;
     case 'uploadFile':
         uploadFile($task_id, $project_id, $group_id);
+        logTaskActivity($task_id, $project_id, $group_id, 'uploadFile');
         break;
     case 'submitTask':
         submitTask($task_id, $project_id, $group_id);
+        logTaskActivity($task_id, $project_id, $group_id, 'submitTask');
+        break;
+    case 'getTaskLogs':
+        getTaskLogs($project_id, $group_id);
         break;
     default:
         echo json_encode([
@@ -200,39 +206,65 @@ function newTask($group_id, $project_id) {
             return;
         }
         
-        $insertQuery = "INSERT INTO tasks (tasktitle, description, deadline, group_id, project_id, user_id , status , created_at) 
-                       VALUES (?, ?, ?, ?, ?, ? , 'pending', NOW())";
+        $insertQuery = "INSERT INTO tasks (tasktitle, description, deadline, group_id, project_id, user_id, status, created_at) 
+                       VALUES (?, ?, ?, ?, ?, ?, 'pending', NOW())";
         $insertStmt = $pdo->prepare($insertQuery);
         $insertStmt->execute([$tasktitle, $description, $taskDeadline, $group_id, $project_id, $user_id]);
 
+        $task_id = $pdo->lastInsertId();
+        
+        logTaskActivity($task_id, $project_id, $group_id, 'newTask');
+        
+        // ECHO RESPONSE SAU CÙNG
         echo json_encode([
             'success' => true,
-            'message' => 'Tạo công việc thành công'
+            'message' => 'Tạo công việc thành công',
+            'task_id' => $task_id  // Thêm task_id vào response
         ]);
-    } catch (Exception $e) {
+        
+        return $task_id;
+        
+    } catch(Exception $e) {
         echo json_encode([
             'success' => false,
             'message' => 'Lỗi khi tạo công việc: ' . $e->getMessage()
         ]);
+        return false;
     }
 }
 
 function delTask($task_id, $project_id, $group_id){
     global $pdo;
     try {
-        $deleteQuerry1= "DELETE from taskfiles WHERE task_id = ? AND project_id = ? AND group_id = ?";
-        $deleteStmt1 = $pdo->prepare($deleteQuerry1);
+ 
+        $pdo->beginTransaction();
+
+        $checkQuery = "SELECT task_id FROM tasks WHERE task_id = ? AND project_id = ? AND group_id = ?";
+        $checkStmt = $pdo->prepare($checkQuery);
+        $checkStmt->execute([$task_id, $project_id, $group_id]);
+
+        $deleteQuery1 = "DELETE FROM taskfiles WHERE task_id = ? AND project_id = ? AND group_id = ?";
+        $deleteStmt1 = $pdo->prepare($deleteQuery1);
         $deleteStmt1->execute([$task_id, $project_id, $group_id]);
 
         $deleteQuery2 = "DELETE FROM tasks WHERE task_id = ? AND project_id = ? AND group_id = ?";
-        $deleteStmt = $pdo->prepare($deleteQuery2);
-        $deleteStmt->execute([$task_id, $project_id, $group_id]);
+        $deleteStmt2 = $pdo->prepare($deleteQuery2);
+        $deleteStmt2->execute([$task_id, $project_id, $group_id]);
+
+        $pdo->commit();
 
         echo json_encode([
             'success' => true,
-            'message' => 'Xóa công việc thành công'
+            'message' => 'Xóa công việc thành công',
+            'deleted_task_id' => $task_id
         ]);
+
     } catch (Exception $e) {
+
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        
         echo json_encode([
             'success' => false,
             'message' => 'Lỗi khi xóa công việc: ' . $e->getMessage()
@@ -382,6 +414,74 @@ function submitTask($task_id, $project_id, $group_id){
         echo json_encode([
             'success' => false,
             'message' => $e->getMessage()
+        ]);
+    }
+}
+
+function logTaskActivity($task_id, $project_id, $group_id, $action) {
+    global $pdo;
+    
+    try {
+        require_once '../core/databasePDO.php';
+        require_once '../core/getUser.php'; // File này đã trả về $userInfo
+        
+        // File getUser.php đã có $userInfo, nhưng cần kiểm tra lại
+        if (!isset($userInfo) || empty($userInfo)) {
+            // Fallback: query trực tiếp nếu cần
+            $userQuery = "SELECT * FROM users WHERE id = ?";
+            $userStmt = $pdo->prepare($userQuery);
+            $userStmt->execute([$_SESSION['user_id']]);
+            $userInfo = $userStmt->fetch(PDO::FETCH_ASSOC);
+        }
+        
+        $user_id = $userInfo['id'] ?? $_SESSION['user_id'] ?? null;
+        $fullname = $userInfo['fullname'] ?? 'Unknown User';
+        
+        // Tự động tạo description dựa trên action
+        $actionMessages = [
+            'newTask' => 'đã tạo công việc mới',
+            'update' => 'đã cập nhật công việc', 
+            'delTask' => 'đã xóa công việc',
+            'submitTask' => 'đã xác nhận hoàn thành công việc',
+            'uploadFile' => 'đã nộp file cho công việc'
+        ];
+        
+        $message = $actionMessages[$action] ?? 'đã thực hiện thao tác trên công việc';
+        $description = $fullname . ' ' . $message . ' (ID: ' . $task_id . ')';
+        
+        $query = 'INSERT INTO task_activities 
+                  (task_id, project_id, group_id, user_id, action, description, created_at) 
+                  VALUES (?, ?, ?, ?, ?, ?, NOW())';
+        
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([$task_id, $project_id, $group_id, $user_id, $action, $description]);
+        
+        return true;
+        
+    } catch(Exception $e) {
+        error_log('Lỗi khi ghi log: ' . $e->getMessage());
+        return false;
+    }
+}
+
+function getTaskLogs($project_id, $group_id) {
+    global $pdo;
+    try {
+        $query = 'SELECT * FROM task_activities WHERE project_id = ? AND group_id = ? ORDER BY created_at DESC';
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([$project_id, $group_id]);
+        $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        echo json_encode([
+            'success' => true,
+            'logs' => $logs  
+        ]);
+        
+    } catch(Exception $e) {
+
+        echo json_encode([
+            'success' => false,
+            'message' => 'Lỗi khi lấy logs: ' . $e->getMessage()
         ]);
     }
 }

@@ -175,9 +175,8 @@ $project_id = $userInfo['project_id'] ?? null;
                 </div>
                 <div class="projects_log bg-white mt-2 border-bottom border-2">
                     <h4>Task logs</h2>
-                </div>
-                <div class="">
-
+                    <div id="taskLogs">
+                    </div>
                 </div>
             </div>
         </div>
@@ -223,6 +222,8 @@ $project_id = $userInfo['project_id'] ?? null;
                     <div class="modal-body">
                         <div class="row">
                             <div class="col-6">
+                                <h5 class="modal-title" id="taskDetail">ID công việc</h5>
+                                <div id="taskId" class="text-muted"></div>
                                 <h5 class="modal-title" id="taskDetail">Tiêu đề công việc</h5>
                                 <div id="taskTitle" class="text-muted"></div>
                                 <h5 class="modal-title" id="taskDetail">Mô tả</h5>
@@ -286,13 +287,76 @@ $project_id = $userInfo['project_id'] ?? null;
 
     <script>
 
+    getTaskLogs(<?php echo $userInfo['project_id'] ?? 'null' ?>, <?php echo $userInfo['group_id'] ?? 'null' ?>);
+    setInterval(getTaskLogs(<?php echo $userInfo['project_id'] ?? 'null' ?>, <?php echo $userInfo['group_id'] ?? 'null' ?>),4000);
+
+    async function getTaskLogs(project_id, group_id){
+        try {
+            if (!project_id || !group_id) {
+                console.error('Thiếu project_id hoặc group_id');
+                return;
+            }
+            
+            const response = await fetch(`../controller/taskAction.php?project_id=${project_id}&group_id=${group_id}&action=getTaskLogs`);
+            const result = await response.json(); 
+            console.log('API Response:', result);
+            
+            if (result.success) {
+                displayLogs(result.logs);
+            } else {
+                console.error('Lỗi từ server:', result.message);
+                // Hiển thị thông báo lỗi lên giao diện
+                const logsContainer = document.getElementById('taskLogs');
+                if (logsContainer) {
+                    logsContainer.innerHTML = `<p class="text-danger">❌ ${result.message}</p>`;
+                }
+            }
+        } catch (err) {
+            console.error('Lỗi fetch:', err);
+            const logsContainer = document.getElementById('taskLogs');
+            if (logsContainer) {
+                logsContainer.innerHTML = `<p class="text-danger">❌ Lỗi kết nối: ${err.message}</p>`;
+            }
+        }
+    }
+
+    function displayLogs(taskLogs){
+        try{
+            const logsContainer = document.getElementById('taskLogs'); // THÊM CONST
+            if (!logsContainer) {
+                console.error('Không tìm thấy element taskLogs');
+                return;
+            }
+            
+            logsContainer.innerHTML = '';
+            
+   
+            if (!taskLogs || taskLogs.length === 0) {
+                logsContainer.innerHTML = '<p class="text-muted">📝 Chưa có hoạt động nào</p>';
+                return;
+            }
+            
+            taskLogs.forEach(log => { 
+                const logElement = document.createElement('p');
+                logElement.className = 'text-muted ms-2';
+                logElement.innerHTML = `
+                    ${log.description} - <small>${new Date(log.created_at).toLocaleString('vi-VN')}</small>
+                `;
+                logsContainer.appendChild(logElement); 
+            });
+            
+        } catch(err) {
+            console.log('Lỗi displayLogs:', err);
+        }
+    }
+
     async function submitTaskF(task_id,project_id,group_id){
         try{
             const response = await fetch(`../controller/taskAction.php?task_id=${task_id}&group_id=${group_id}&project_id=${project_id}&action=submitTask`)
             const result = await response.json();
             if(result.success){
                 alert(result.message);
-                fetchTask();
+                window.location.reload();
             }else{
                 alert(result.message)
             }
@@ -483,30 +547,54 @@ $project_id = $userInfo['project_id'] ?? null;
                 );
             const result = await response.json();
             if (result.success && result.task) {
-  
+
                 const created = new Date(result.task.created_at).toLocaleDateString('vi-VN');
                 const deadline = new Date(result.task.deadline).toLocaleDateString('vi-VN');
 
+                document.getElementById('taskId').innerText = result.task.task_id;
                 document.getElementById('taskTitle').innerText = result.task.tasktitle;
                 document.getElementById('Description').innerText = result.task.description;
                 document.getElementById('Creator').innerText = result.task.creator_name;
                 document.getElementById('Created_at').innerText = created;
                 document.getElementById('Deadline').innerText = deadline;
+                
+
+                const submitBtn = document.getElementById('submitTask');
+                const deleteTaskBtn = document.getElementById('delTaskButton');
+                
                 if(result.task.role_in_group === 'leader'){
-                    document.getElementById('submitTask').addEventListener('click', async (e) =>{
-                        e.preventDefault();
-                        e.stopPropagation();
-                        await submitTaskF(result.task.task_id,result.task.project_id,result.task.group_id);
-                    })
-                    document.getElementById('delTaskButton').addEventListener('click', async (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        await deleteTask(result.task.task_id, result.task.project_id, result.task.group_id);
-                    });
+
+                    if(result.task.status === 'submitted'){
+                        submitBtn.style.display = 'block';
+                        submitBtn.dataset.taskId = result.task.task_id;
+                        submitBtn.dataset.projectId = result.task.project_id;
+                        submitBtn.dataset.groupId = result.task.group_id;
+                    } else {
+                        submitBtn.style.display = 'none';
+                        delete submitBtn.dataset.taskId;
+                        delete submitBtn.dataset.projectId;
+                        delete submitBtn.dataset.groupId;
+                    }
+                    
+
+                    deleteTaskBtn.style.display = 'block';
+                    deleteTaskBtn.dataset.taskId = result.task.task_id;
+                    deleteTaskBtn.dataset.projectId = result.task.project_id;
+                    deleteTaskBtn.dataset.groupId = result.task.group_id;
+                    
+                } else {
+                    submitBtn.style.display = 'none';
+                    deleteTaskBtn.style.display = 'none';
+                    
+                    delete submitBtn.dataset.taskId;
+                    delete submitBtn.dataset.projectId;
+                    delete submitBtn.dataset.groupId;
+                    delete deleteTaskBtn.dataset.taskId;
+                    delete deleteTaskBtn.dataset.projectId;
+                    delete deleteTaskBtn.dataset.groupId;
                 }
             
                 if(result.task.files.filepath){
-                    
                     const fileLink = document.createElement('a');
                     fileLink.href = result.task.files.filepath;
                     fileLink.innerText = 'Tải tệp';
@@ -527,6 +615,36 @@ $project_id = $userInfo['project_id'] ?? null;
             alert('Lỗi khi lấy chi tiết công việc: ' + err.message);
         }
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('click', async (e) => {
+            if (e.target.id === 'submitTask') {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const taskId = e.target.dataset.taskId;
+                const projectId = e.target.dataset.projectId;
+                const groupId = e.target.dataset.groupId;
+                
+                if (taskId && projectId && groupId) {
+                    await submitTaskF(taskId, projectId, groupId);
+                }
+            }
+
+            if (e.target.id === 'delTaskButton') {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const taskId = e.target.dataset.taskId;
+                const projectId = e.target.dataset.projectId;
+                const groupId = e.target.dataset.groupId;
+                
+                if (taskId && projectId && groupId) {
+                    await deleteTask(taskId, projectId, groupId);
+                }
+            }
+        });
+    });
 
     const newTaskButton = document.querySelector('.new_task_form');
     if (newTaskButton) {
@@ -575,8 +693,7 @@ $project_id = $userInfo['project_id'] ?? null;
             const result = await response.json();
             if (result.success) {
                 alert(result.message);
-                fetchTasks();
-                taskCal();
+                window.location.reload();
             } else {
                 alert(result.message);
             }
@@ -584,6 +701,7 @@ $project_id = $userInfo['project_id'] ?? null;
             alert('Lỗi khi xóa công việc: ' + err.message);
         }
     }
+
     </script>
 </body>
 

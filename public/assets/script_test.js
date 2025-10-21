@@ -96,7 +96,7 @@ function taskCal(){
     const submittedTasks = document.querySelectorAll('.task_content_submitted').length;
     
     // Chart JS - Sử dụng dữ liệu thực tế từ task calculation
-    var options = {
+    let options = {
         series: [completedTasks, uncompletedTasks, submittedTasks],
         chart: {
             type: 'donut',
