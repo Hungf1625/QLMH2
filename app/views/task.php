@@ -113,11 +113,17 @@ $project_id = $userInfo['project_id'] ?? null;
                     <i class="bi bi-list-task"></i> Công việc
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="deadline.php">
-                    <i class="bi bi-upload"></i> Mốc nộp bài
-                </a>
-            </li>
+            <?php
+            if(isset($userInfo['project_id']) && isset($userInfo['group_id'])) {
+                echo '
+                <li class="nav-item">
+                    <a class="nav-link" href="deadline.php">
+                        <i class="bi bi-upload"></i> Mốc nộp bài
+                    </a>
+                </li>
+                ';
+            }
+            ?>
             <li class="nav-item">
                 <a class="nav-link" href="re-evaluation.php">
                     <i class="bi bi-chat-dots"></i> Phúc khảo
@@ -173,9 +179,9 @@ $project_id = $userInfo['project_id'] ?? null;
                             box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                     <div id="chart"></div>
                 </div>
-                <div class="projects_log bg-white mt-2 border-bottom border-2">
-                    <h4>Task logs</h2>
-                    <div id="taskLogs">
+                <div class="projects_log bg-white mt-2 border-bottom border-2" style="height: 340px;border: 1px solid #ddd; border-radius: 8px;">
+                    <h4 style="position: sticky;">Task logs</h2>
+                    <div id="taskLogs" style="height: 300px; overflow-y: auto;">
                     </div>
                 </div>
             </div>
@@ -322,7 +328,7 @@ $project_id = $userInfo['project_id'] ?? null;
 
     function displayLogs(taskLogs){
         try{
-            const logsContainer = document.getElementById('taskLogs'); // THÊM CONST
+            const logsContainer = document.getElementById('taskLogs'); 
             if (!logsContainer) {
                 console.error('Không tìm thấy element taskLogs');
                 return;
@@ -561,37 +567,41 @@ $project_id = $userInfo['project_id'] ?? null;
 
                 const submitBtn = document.getElementById('submitTask');
                 const deleteTaskBtn = document.getElementById('delTaskButton');
-                
-                if(result.task.role_in_group === 'leader'){
+            
+                if (submitBtn && deleteTaskBtn) {
+                    if(result.task.role_in_group === 'leader'){
 
-                    if(result.task.status === 'submitted'){
-                        submitBtn.style.display = 'block';
-                        submitBtn.dataset.taskId = result.task.task_id;
-                        submitBtn.dataset.projectId = result.task.project_id;
-                        submitBtn.dataset.groupId = result.task.group_id;
+                        if(result.task.status === 'submitted'){
+                            submitBtn.style.display = 'block';
+                            submitBtn.dataset.taskId = result.task.task_id;
+                            submitBtn.dataset.projectId = result.task.project_id;
+                            submitBtn.dataset.groupId = result.task.group_id;
+                        } else {
+                            submitBtn.style.display = 'none';
+                            delete submitBtn.dataset.taskId;
+                            delete submitBtn.dataset.projectId;
+                            delete submitBtn.dataset.groupId;
+                        }
+                        
+
+                        deleteTaskBtn.style.display = 'block';
+                        deleteTaskBtn.dataset.taskId = result.task.task_id;
+                        deleteTaskBtn.dataset.projectId = result.task.project_id;
+                        deleteTaskBtn.dataset.groupId = result.task.group_id;
+                        
                     } else {
                         submitBtn.style.display = 'none';
+                        deleteTaskBtn.style.display = 'none';
+                        
                         delete submitBtn.dataset.taskId;
                         delete submitBtn.dataset.projectId;
                         delete submitBtn.dataset.groupId;
+                        delete deleteTaskBtn.dataset.taskId;
+                        delete deleteTaskBtn.dataset.projectId;
+                        delete deleteTaskBtn.dataset.groupId;
                     }
-                    
-
-                    deleteTaskBtn.style.display = 'block';
-                    deleteTaskBtn.dataset.taskId = result.task.task_id;
-                    deleteTaskBtn.dataset.projectId = result.task.project_id;
-                    deleteTaskBtn.dataset.groupId = result.task.group_id;
-                    
                 } else {
-                    submitBtn.style.display = 'none';
-                    deleteTaskBtn.style.display = 'none';
-                    
-                    delete submitBtn.dataset.taskId;
-                    delete submitBtn.dataset.projectId;
-                    delete submitBtn.dataset.groupId;
-                    delete deleteTaskBtn.dataset.taskId;
-                    delete deleteTaskBtn.dataset.projectId;
-                    delete deleteTaskBtn.dataset.groupId;
+                    console.warn('Một hoặc cả hai nút không tồn tại trong DOM');
                 }
             
                 if(result.task.files.filepath){

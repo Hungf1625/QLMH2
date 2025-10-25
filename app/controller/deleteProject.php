@@ -70,7 +70,6 @@ function deleteGroup(){
             throw new Exception('Đề tài không tồn tại');
         }
 
-       
         $checkQuery = 'SELECT * FROM projectdetail WHERE project_id = ?';
         $checkStmt = $pdo->prepare($checkQuery);
         $checkStmt->execute([$project_id]);
@@ -80,14 +79,16 @@ function deleteGroup(){
             throw new Exception('Không tìm thấy đề tài');
         }
 
-        $updateQuery = 'UPDATE projectdetail SET group_id = 0 WHERE project_id = ? ';
+        // THÊM: Update cả group_id và status về pending
+        $updateQuery = 'UPDATE projectdetail SET group_id = NULL, status = "pending" WHERE project_id = ?';
         $updateStmt = $pdo->prepare($updateQuery);
         $updateStmt->execute([$project_id]);
 
         if($updateStmt->rowCount() > 0) {
             echo json_encode([
                 'success' => true,
-                'message' => 'Đã hủy nhóm đăng ký đề tài thành công'
+                'message' => 'Đã hủy nhóm đăng ký đề tài thành công',
+                'status' => 'pending'
             ]);
         } else {
             throw new Exception('Hủy đăng ký thất bại (bạn không có quyền hoặc đề tài không tồn tại)');

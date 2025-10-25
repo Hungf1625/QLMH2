@@ -104,11 +104,17 @@ require_once '../core/getUser.php';
                     <i class="bi bi-list-task"></i> Công việc
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="deadline.php">
-                    <i class="bi bi-upload"></i> Mốc nộp bài
-                </a>
-            </li>
+            <?php
+            if(isset($userInfo['project_id']) && isset($userInfo['group_id'])) {
+                echo '
+                <li class="nav-item">
+                    <a class="nav-link" href="deadline.php">
+                        <i class="bi bi-upload"></i> Mốc nộp bài
+                    </a>
+                </li>
+                ';
+            }
+            ?>
             <li class="nav-item">
                 <a class="nav-link" href="re-evaluation.php">
                     <i class="bi bi-chat-dots"></i> Phúc khảo
@@ -140,41 +146,43 @@ require_once '../core/getUser.php';
 
             <!-- Button trigger modal -->
 
-        <!-- Modal -->
-        <div class="modal fade" id="addGroupModal" tabindex="-1" aria-labelledby="addGroupModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addGroupModalLabel">Thêm Đề Tài Mới</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <!-- Modal -->
+            <div class="modal fade" id="addGroupModal" tabindex="-1" aria-labelledby="addGroupModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addGroupModalLabel">Thêm Đề Tài Mới</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="../model/newGroup.php" method="POST">
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="projectName" class="form-label">Tên Đề Tài</label>
+                                    <input type="text" class="form-control" id="projectName" name="projectName"
+                                        required>
+                                </div>
+
+                                <!-- Thêm các trường khác nếu cần -->
+                                <div class="mb-3">
+                                    <label for="Description" class="form-label">Mô tả đề tài</label>
+                                    <textarea class="form-control" id="Description" name="projectDescription"
+                                        rows="3"></textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="Deadline" class="form-label">Hạn chót</label>
+                                    <input type="date" class="form-control" id="projectDeadline" name="Deadline">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                <button type="submit" class="btn btn-primary">Tạo đề tài</button>
+                            </div>
+                        </form>
                     </div>
-                    <form action="../model/newGroup.php" method="POST">
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label for="projectName" class="form-label">Tên Đề Tài</label>
-                                <input type="text" class="form-control" id="projectName" name="projectName" required>
-                            </div>
-
-                            <!-- Thêm các trường khác nếu cần -->
-                            <div class="mb-3">
-                                <label for="Description" class="form-label">Mô tả đề tài</label>
-                                <textarea class="form-control" id="Description" name="projectDescription"
-                                    rows="3"></textarea>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="Deadline" class="form-label">Hạn chót</label>
-                                <input type="date" class="form-control" id="projectDeadline" name="Deadline">
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                            <button type="submit" class="btn btn-primary">Tạo đề tài</button>
-                        </div>
-                    </form>
                 </div>
             </div>
-        </div>
     </main>
 
 

@@ -58,7 +58,7 @@ try {
             exit;
         }
 
-        $updateQuery = 'UPDATE projectdetail SET group_id = ? WHERE project_id = ?';
+        $updateQuery = 'UPDATE projectdetail SET group_id = ?, status = "in_progress" WHERE project_id = ?';
         $updateStmt = $pdo->prepare($updateQuery);
         $updateStmt->execute([$userInfo['group_id'], $_GET['project_id']]);
 
@@ -67,7 +67,8 @@ try {
                 'success' => true,
                 'message' => 'Đăng ký đề tài thành công',
                 'groupname' => $userInfo['groupname'],
-                'project_id' => $_GET['project_id']
+                'project_id' => $_GET['project_id'],
+                'status' => 'in_progress'
             ]);
         } else {
             echo json_encode([

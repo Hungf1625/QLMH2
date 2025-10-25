@@ -131,11 +131,17 @@ $currentUser = $stmt->fetch(PDO::FETCH_ASSOC);
                     <i class="bi bi-list-task"></i> Công việc
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="deadline.php">
-                    <i class="bi bi-upload"></i> Mốc nộp bài
-                </a>
-            </li>
+            <?php
+            if(isset($userInfo['project_id']) && isset($userInfo['group_id'])) {
+                echo '
+                <li class="nav-item">
+                    <a class="nav-link" href="deadline.php">
+                        <i class="bi bi-upload"></i> Mốc nộp bài
+                    </a>
+                </li>
+                ';
+            }
+            ?>
             <li class="nav-item">
                 <a class="nav-link" href="re-evaluation.php">
                     <i class="bi bi-chat-dots"></i> Phúc khảo
