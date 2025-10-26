@@ -344,12 +344,10 @@ $groups = $stmt->fetch(PDO::FETCH_ASSOC);
                         <h3>Thông báo</h3>
                     </div>
                     <div class="information_body">
-                        <p>TEST</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Cột phải - 1 ảnh lớn -->
 
         </div>
         </div>

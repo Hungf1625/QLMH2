@@ -182,10 +182,16 @@ $currentUser = $stmt->fetch(PDO::FETCH_ASSOC);
                                         </button>
                                     </div>
                                     <div class="input-group w-50 mx-auto">
-                                        <input type="search" class="form-control rounded"
-                                            placeholder="Nhập mã nhóm hoặc tên nhóm" aria-label="Search"
-                                            aria-describedby="search-addon" />
-                                        <button type="button" class="btn btn-outline-primary">Tìm kiếm</button>
+                                        <input type="search" 
+                                            class="form-control rounded" 
+                                            id="searchInput"
+                                            placeholder="Nhập mã nhóm hoặc tên nhóm" 
+                                            aria-label="Search"/>
+                                        <button type="button" 
+                                                class="btn btn-outline-primary"
+                                                onclick="searchGroups()">
+                                            <i class="bi bi-search"></i> Tìm kiếm
+                                        </button>
                                     </div>
                                 </th>
                             </tr>
@@ -274,7 +280,63 @@ $currentUser = $stmt->fetch(PDO::FETCH_ASSOC);
         </div>
 
     </main>
+    
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const tbody = document.querySelector('tbody');
+        const rows = tbody.getElementsByTagName('tr');
 
+        function searchGroups() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            for (let row of rows) {
+                const groupName = row.cells[1]?.textContent.toLowerCase() || '';
+                const projectName = row.cells[2]?.textContent.toLowerCase() || '';
+                
+                if (groupName.includes(searchTerm) || projectName.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+            
+            let allHidden = true;
+            for (let row of rows) {
+                if (row.style.display !== 'none') {
+                    allHidden = false;
+                    break;
+                }
+            }
+            
+            if (allHidden && searchTerm !== '') {
+                const noResults = document.createElement('tr');
+                noResults.id = 'no-results';
+                noResults.innerHTML = `
+                    <td colspan="5" class="text-center py-4">
+                        <div class="text-muted">
+                            <i class="bi bi-search fs-1"></i>
+                            <p class="mt-3 mb-0">Không tìm thấy nhóm nào phù hợp</p>
+                            <small>Thử tìm kiếm với từ khóa khác</small>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(noResults);
+            } else {
+                const noResultsRow = document.getElementById('no-results');
+                if (noResultsRow) {
+                    noResultsRow.remove();
+                }
+            }
+        }
+
+        searchInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                searchGroups();
+            }
+        });
+
+        searchInput.addEventListener('input', searchGroups);
+    </script>
 
 </body>
 

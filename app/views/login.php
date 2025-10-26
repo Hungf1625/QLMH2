@@ -197,9 +197,9 @@
                 <label for="role">Đăng nhập với tư cách</label>
                 <select id="role" name="role_id" required>
                     <option value="SV">Sinh Viên</option>
-                    <option value="GV">GiangVien</option>
+                    <option value="GV">Giảng Vien</option>
                     <option value="HD">Hội đồng đánh giá</option>
-                    <option value="TK">Thu Ký</option>
+                    <option value="TK">Thư Ký</option>
                 </select>
             </div>
             <button type="submit" class="login-btn">Đăng nhập</button>

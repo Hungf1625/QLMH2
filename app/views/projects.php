@@ -186,10 +186,16 @@ require_once '../core/getUser.php';
                                         ?>
                             </div>
                             <div class="input-group w-50 mx-auto" style="padding-bottom: 5px;">
-                                <input type="search" class="form-control rounded"
-                                    placeholder="Nhập mã nhóm hoặc tên nhóm" aria-label="Search"
-                                    aria-describedby="search-addon" />
-                                <button type="button" class="btn btn-outline-primary">Tìm kiếm</button>
+                                <input type="search" 
+                                    class="form-control rounded" 
+                                    id="searchInput"
+                                    placeholder="Nhập tên đề tài hoặc tên giảng viên" 
+                                    aria-label="Search"/>
+                                <button type="button" 
+                                        class="btn btn-outline-primary" 
+                                        onclick="searchProjects()">
+                                    <i class="bi bi-search"></i> Tìm kiếm
+                                </button>
                             </div>
                             </th>
                         </tr>
@@ -275,6 +281,50 @@ require_once '../core/getUser.php';
     </main>
 
     <script>
+
+    let allProjects = []; 
+
+    async function tableBodyContent() {
+        try {
+            const response = await fetch('../core/getProjects.php');
+            const result = await response.json();
+
+            if (result.success) {
+                allProjects = result.projects;
+                renderTable(result.projects);
+            } else {
+                alert(result.message)
+            }
+        } catch (err) {
+            console.log('error: ', err);
+            alert("lỗi");
+        }
+    }
+
+    function searchProjects() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        
+        if (!searchTerm) {
+            renderTable(allProjects);
+            return;
+        }
+
+        const filteredProjects = allProjects.filter(project => {
+            return (
+                project.projectname?.toLowerCase().includes(searchTerm) ||
+                project.fullname?.toLowerCase().includes(searchTerm)
+            );
+        });
+
+        renderTable(filteredProjects);
+    }
+
+    document.getElementById('searchInput').addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') {
+        searchProjects();
+    }
+    });
+
     document.getElementById('newPJ').addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
@@ -299,25 +349,7 @@ require_once '../core/getUser.php';
     });
 
     tableBodyContent();
-    setInterval(tableBodyContent, 4000);
     
-    async function tableBodyContent() {
-        try {
-            const response = await fetch('../core/getProjects.php');
-
-            const result = await response.json();
-
-            if (result.success) {
-                renderTable(result.projects);
-            } else {
-                alert(result.message)
-            }
-
-        } catch (err) {
-            console.log('error: ', err);
-            alert("lỗi");
-        }
-    }
 
     function renderTable(projects) {
         const tableBody = document.getElementById('projectContent');
@@ -326,7 +358,9 @@ require_once '../core/getUser.php';
         if (!projects || projects.length === 0) {
             tableBody.innerHTML = `
             <tr>
-                <td colspan="6" class="text-center"><i class="bi bi-book"></i>Không có đề tài nào</td>
+                <td colspan="6" class="text-center">
+                    <i class="bi bi-search"></i> Không tìm thấy đề tài nào
+                </td>
             </tr>`;
             return;
         }
