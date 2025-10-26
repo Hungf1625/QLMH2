@@ -348,7 +348,6 @@ $groups = $stmt->fetch(PDO::FETCH_ASSOC);
                 </div>
             </div>
 
-
         </div>
         </div>
     </main>
