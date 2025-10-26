@@ -361,11 +361,15 @@ $action = $_GET['action'] ?? '';
     </main>
 
     <script>
-    getInformation(<?php echo $project_id ?>, <?php echo $group_id ?>);
-    getCompletedTasks(<?php echo $project_id ?>, <?php echo $group_id ?>);
-    getGroupMembers(<?php echo $group_id ?>);
 
+    document.addEventListener('DOMContentLoaded', () =>{
+        getInformation(<?php echo $project_id ?>, <?php echo $group_id ?>);
+        getCompletedTasks(<?php echo $project_id ?>, <?php echo $group_id ?>);
+        getGroupMembers(<?php echo $group_id ?>);
+    })
+    
     document.getElementById('new_PK').addEventListener('submit', async (e) => {
+        e.preventDefault();
         const project_id = <?php echo $project_id ?>;
         const group_id = <?php echo $group_id ?>;
         try {
@@ -377,8 +381,8 @@ $action = $_GET['action'] ?? '';
                 });
             const result = await response.json();
             if (result.success) {
-                Alert("Đã cập nhật điểm thành công");
-                window.location.reload();
+                alert("Đã cập nhật điểm thành công");
+                window.location.href = "re-evaluation.php";
             } else {
                 console.log("Lỗi:", result.message);
             }
@@ -399,8 +403,8 @@ $action = $_GET['action'] ?? '';
                 });
             const result = await response.json();
             if (result.success) {
-                Alert("Đã cập nhật điểm thành công");
-                window.location.href = 'nopbai.php';
+                alert("Đã cập nhật điểm thành công");
+                window.location.href = "nopbai.php";
             } else {
                 console.log("Lỗi:", result.message);
             }

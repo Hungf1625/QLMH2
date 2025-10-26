@@ -75,18 +75,18 @@ require_once '../core/getUser.php';
 
     .confirmBtn {
         position: absolute;
-        bottom: 90px;
+        bottom: 20px;
     }
 
     .yellowBtn {
         position: absolute;
-        bottom: 90px;
+        bottom: 20px;
         right: 10px;
     }
 
     .cancelBtn {
         position: absolute;
-        bottom: 90px;
+        bottom: 20px;
     }
     </style>
 </head>
@@ -226,15 +226,24 @@ require_once '../core/getUser.php';
                     <h6 id="lecturerName" class="text-muted ps-2"></h6>
                 </div>
                 <div class="div3">
-                    <h3 class="text-center">Nộp bài</h3>
-                    <h6>Hạn chót</h6>
-                    <p id="deadline" class="text-muted"></p>
-                    <h6>Ngày còn lại</h6>
-                    <p id="remainDay" class="text-muted"></p>
-                    <h6>Trạng thái</h6>
-                    <p id="projectStatus" class="text-muted"></p>
-                    <h6>Trạng thái phúc khảo</h6>
-                    <p id="reEvaStatus" class="text-muted"></p>
+                    <div class="row">
+                     <h3 class="text-center">Nộp bài</h3>
+                        <div class="col-6">
+                            <h6>Hạn chót</h6>
+                            <p id="deadline" class="text-muted"></p>
+                            <h6>Ngày còn lại</h6>
+                            <p id="remainDay" class="text-muted"></p>
+                            <h6>Trạng thái</h6>
+                            <p id="projectStatus" class="text-muted"></p>
+                        </div>
+                        <div class="col-6">               
+                            <h6>Trạng thái phúc khảo</h6>
+                            <p id="reEvaStatus" class="text-muted"></p>
+                            <h6>Điểm số</h6>
+                            <p id="projectRS" class="text-muted"></p>
+                        </div>
+                    </div>
+
                     <div style="position: relative;
                                     bottom: -170px;">
                         <?php
@@ -338,9 +347,12 @@ require_once '../core/getUser.php';
     </main>
 
     <script>
-    renderProjectInfor(<?php echo $userInfo['project_id']?>, <?php echo $userInfo['group_id']?>);
-    renderGroupmembers(<?php echo $userInfo['project_id']?>, <?php echo $userInfo['group_id']?>);
-    renderCompletedtasks(<?php echo $userInfo['project_id']?>, <?php echo $userInfo['group_id']?>);
+    document.addEventListener('DOMContentLoaded', () => {
+        renderProjectInfor(<?php echo $userInfo['project_id']?>, <?php echo $userInfo['group_id']?>);
+        renderGroupmembers(<?php echo $userInfo['project_id']?>, <?php echo $userInfo['group_id']?>);
+        renderCompletedtasks(<?php echo $userInfo['project_id']?>, <?php echo $userInfo['group_id']?>);
+    })
+
     async function renderProjectInfor(project_id, group_id) {
         try {
             const response = await fetch(
@@ -356,8 +368,10 @@ require_once '../core/getUser.php';
             const submitBtn = document.getElementById('submitBtn');
             const reEvaStatus = document.getElementById('reEvaStatus');
             const projectStatus = document.getElementById('projectStatus');
-
+            const projectRS = document.getElementById('projectRS');
+            console.log(projectRS);
             if (result.success) {
+                
                 const project = result.project;
                 const currentDate = new Date();
                 const deadlineDate = new Date(project.deadline);
@@ -370,7 +384,7 @@ require_once '../core/getUser.php';
                 if (projectId) projectId.innerHTML = project.project_id;
                 if (lecturerName) lecturerName.innerHTML = project.lecturer_name || 'Chưa có GVHD';
                 if (deadline) deadline.innerHTML = formattedDeadline;
-
+                if (projectRS) projectRS.innerHTML = project.result;
                 if (remainDay) renderDeadlineInfo(remainDay, daysRemaining);
 
                 if (reEvaStatus) renderReEvaluationStatus(reEvaStatus, project.re_evaluation);

@@ -322,7 +322,6 @@ $project_id = $userInfo['project_id'] ?? null;
                 displayLogs(result.logs);
             } else {
                 console.error('Lỗi từ server:', result.message);
-                // Hiển thị thông báo lỗi lên giao diện
                 const logsContainer = document.getElementById('taskLogs');
                 if (logsContainer) {
                     logsContainer.innerHTML = `<p class="text-danger">❌ ${result.message}</p>`;
@@ -388,8 +387,7 @@ $project_id = $userInfo['project_id'] ?? null;
 
     document.getElementById('uploadForm').addEventListener('submit', async function(e) {
         e.preventDefault();
-        
-
+    
         const task_id = document.getElementById('hiddenTaskId').value;
         const group_id = <?php echo $userInfo['group_id'] ?? 'null'; ?>;
         const project_id = <?php echo $userInfo['project_id'] ?? 'null'; ?>;
@@ -399,7 +397,7 @@ $project_id = $userInfo['project_id'] ?? null;
             return;
         }
         
-        const formData = new FormData(this);
+        const formData = new FormData(e.target);
         
         try {
             const response = await fetch(`../controller/taskAction.php?task_id=${task_id}&project_id=${project_id}&group_id=${group_id}&action=uploadFile`, {

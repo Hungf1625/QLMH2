@@ -68,12 +68,22 @@ function insertResultPJ($project_id, $group_id) {
     
     $result = trim($_POST['result']);
     
+    header('Content-Type: application/json');
+    
     if (empty($result)) {
-        throw new Exception("Kết quả không được để trống");
+        echo json_encode([
+            'success' => false,
+            'message' => 'Kết quả không được để trống'
+        ]);
+        exit();
     }
     
     if (empty($project_id) || empty($group_id)) {
-        throw new Exception("Project ID và Group ID không được để trống");
+        echo json_encode([
+            'success' => false,
+            'message' => 'Project ID và Group ID không được để trống'
+        ]);
+        exit();
     }
     
     try {
@@ -88,21 +98,24 @@ function insertResultPJ($project_id, $group_id) {
         ]);
         
         if ($success && $stmt->rowCount() > 0) {
-            echo "<script>
-                alert('Cập nhật kết quả thành công');
-                window.location.href = '../views/re-evaluation.php';
-            </script>";
-            exit();
+            echo json_encode([
+                'success' => true,
+                'message' => 'Cập nhật kết quả thành công',
+                'affected_rows' => $stmt->rowCount()
+            ]);
         } else {
-            throw new Exception("Cập nhật kết quả thất bại. Có thể bản ghi không tồn tại.");
+            echo json_encode([
+                'success' => false,
+                'message' => 'Cập nhật kết quả thất bại. Có thể bản ghi không tồn tại.'
+            ]);
         }
         
     } catch (Exception $e) {
-        echo "<script>
-            alert('Lỗi: " . addslashes($e->getMessage()) . "');
-            window.location.href = '../views/re-evaluation.php';
-        </script>";
-        exit();
+        echo json_encode([
+            'success' => false,
+            'message' => 'Lỗi: ' . $e->getMessage()
+        ]);
     }
+    exit();
 }
 ?>

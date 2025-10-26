@@ -57,6 +57,7 @@ function getProjectInfor($project_id, $group_id) {
                     PD.description,
                     PD.created_at,
                     PD.status,
+                    PD.result,
                     PD.re_evaluation,
                     U.fullname as lecturer_name
                   FROM projectdetail PD
@@ -303,8 +304,8 @@ function reEvalutionBtn($project_id, $group_id){
                 return;
             }
 
-            $insertReEvalQuery = 'INSERT INTO reevalutiondetail (title, description, project_id, group_id, request_date, status) 
-                                VALUES (?, ?, ?, ?, NOW(), "pending")';
+            $insertReEvalQuery = 'INSERT INTO reevalutiondetail (title, description, project_id, group_id, request_date, status, lecturer_id ,secretary_id ,council_id) 
+                                VALUES (?, ?, ?, ?, NOW(), "pending",NULL,NULL,NULL)';
             $insertStmt = $pdo->prepare($insertReEvalQuery);
             $insertStmt->execute([$title, $description, $project_id, $group_id]);
 

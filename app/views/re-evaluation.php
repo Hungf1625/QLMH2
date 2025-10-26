@@ -120,7 +120,7 @@ $currentRole = $userInfo['role_id'] ?? null;
             if(!($userInfo['role_id'] == "SV")){
                 echo '
                     <li class="nav-item">
-                        <a class="nav-link" href="re-evaluation.php">
+                        <a class="nav-link active" href="re-evaluation.php">
                             <i class="bi bi-chat-dots"></i> Phúc khảo
                         </a>
                     </li>   
@@ -148,7 +148,11 @@ $currentRole = $userInfo['role_id'] ?? null;
                     <thead>
                         <tr>
                             <?php
-                                    '<th colspan="7" style="position:relative; border: none;">'
+                                if($currentRole === 'HD'){
+                                    echo '<th colspan="6" style="position:relative; border: none;">';
+                                }else{
+                                    echo '<th colspan="7" style="position:relative; border: none;">';
+                                } 
                                 ?>
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h1 class="mb-0" style="flex: 1; text-align: center; padding-top: 10px;">Danh sách đề tài yêu cầu phúc khảo</h1>
@@ -178,7 +182,10 @@ $currentRole = $userInfo['role_id'] ?? null;
                             <th class="text-center align-middle">Giảng viên quản lý</th>
                             <th class="text-center align-middle" >Tiêu đề phúc khảo</th>
                             <th class="text-center align-middle" width="150" class="text-center">Chi tiết</th>
-                            <th class="text-center align-middle" width="180" class="text-center">Chấp nhận/Từ chối</th>
+                            <?php
+                            if($currentRole !=='HD')
+                             echo '<th class="text-center align-middle" width="180" class="text-center">Chấp nhận/Từ chối</th>'
+                            ?>
                         </tr>
                     </thead>
                     <tbody id="reevaluationContent"></tbody>
@@ -220,14 +227,16 @@ $currentRole = $userInfo['role_id'] ?? null;
                     <td class="text-muted text-center">
                         <a href="deadlinePK.php?project_id=${project.project_id}&group_id=${project.group_id}" class="detailBtn btn btn-primary btn-sm">Xem chi tiết</a>
                     </td>
-                    <td class="text-center">
-                        <button class="acceptBtn btn btn-success btn-sm" onclick="accHandle('${currentRole}', '${project.project_id}', '${project.group_id}')">
-                            <i class="bi bi-check"></i>
-                        </button>
-                        <button class="declineBtn btn btn-danger btn-sm" onclick="cancelHandle('${currentRole}', '${project.project_id}', '${project.group_id}')">
-                            <i class="bi bi-x"></i>
-                        </button>
-                    </td>
+                    ${currentRole !== 'HD' ? `
+                        <td class="text-center">
+                            <button class="acceptBtn btn btn-success btn-sm" onclick="accHandle('${currentRole}', '${project.project_id}', '${project.group_id}')">
+                                <i class="bi bi-check"></i>
+                            </button>
+                            <button class="declineBtn btn btn-danger btn-sm" onclick="cancelHandle('${currentRole}', '${project.project_id}', '${project.group_id}')">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </td>
+                    ` : ''}
                 `;
                 projectContent.appendChild(row);
             });

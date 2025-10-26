@@ -152,13 +152,14 @@ function accProject($role_id,$project_id,$group_id){
 
 function cancelProject($role_id,$project_id,$group_id){
     global $pdo;
+    global $userInfo;
     try{
         if($role_id === "GV"){
-            $query1 = "UPDATE reevalutiondetail SET lecturer_id = 'none', status = 'none' WHERE project_id = ? AND group_id = ? AND status = 'pending'";
+            $query1 = "UPDATE reevalutiondetail SET lecturer_id = ?, status = 'rejected' WHERE project_id = ? AND group_id = ? AND status = 'pending'";
             $stmt1 = $pdo->prepare($query1);
-            $stmt1->execute([$project_id, $group_id]);
+            $stmt1->execute([$userInfo['id'],$project_id, $group_id]);
                 
-            $query2 = "UPDATE projectdetail SET re_evaluation = 'none' WHERE project_id = ? AND group_id = ?";
+            $query2 = "UPDATE projectdetail SET re_evaluation = NULL WHERE project_id = ? AND group_id = ?";
             $stmt2 = $pdo->prepare($query2);
             $stmt2->execute([$project_id, $group_id]);
             
@@ -174,15 +175,15 @@ function cancelProject($role_id,$project_id,$group_id){
                 ]);
             }
         }else if($role_id ==="TK"){
-            $query1 = "UPDATE reevalutiondetail SET secretary_id = 'none', status = 'none' WHERE project_id = ? AND group_id = ? AND status = 'in_progress'";
+            $query1 = "UPDATE reevalutiondetail SET secretary_id = ?, status = 'rejected' WHERE project_id = ? AND group_id = ? AND status = 'in_progress'";
             $stmt1 = $pdo->prepare($query1);
-            $stmt1->execute([$project_id, $group_id]);
+            $stmt1->execute([$userInfo['id'],$project_id, $group_id]);
 
 
             if ($stmt1->rowCount() > 0) {
                 echo json_encode([
                     'success' => true,
-                    'message' => 'Đã phê duyệt yêu cầu phúc khảo'
+                    'message' => 'Đã xóa yêu cầu phúc khảo'
                 ]);
             } else {
                 echo json_encode([
