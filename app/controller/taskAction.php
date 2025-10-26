@@ -17,7 +17,8 @@ $group_id = $_GET['group_id'] ?? null;
 $project_id = $_GET['project_id'] ?? null;
 $task_id = $_GET['task_id'] ?? null;
 
-// Validate input
+
+
 if (!$group_id || !$project_id) {
     echo json_encode([
         'success' => false,

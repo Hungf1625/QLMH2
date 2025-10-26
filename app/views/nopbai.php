@@ -4,7 +4,6 @@ require_once '../core/databasePDO.php';
 require_once '../core/checkIfLogin.php';
 require_once '../core/getUser.php';
 
-$currentRole = $userInfo['role_id'] ?? null;
 ?>
 
 <!DOCTYPE html>
@@ -19,7 +18,6 @@ $currentRole = $userInfo['role_id'] ?? null;
     <link rel="stylesheet" href="../../public/assets/style.css">
     <script src="../../public/assets/script_test.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 </head>
 
@@ -31,13 +29,13 @@ $currentRole = $userInfo['role_id'] ?? null;
                     <img src="../../img/sv_logo_dashboard.png" alt="Logo" width="200px" height="40px"
                         class="d-inline-block align-text-top brand_logo">
                 </a>
-                    <div class="d-flex ms-2 ms-auto">
-                        <?php 
+                    <div class="d-flex ms-2 me-2 ms-auto"> 
+                    <?php 
                         if (isset($userInfo)){
                             echo '<img src="' . htmlspecialchars($userInfo['avatar']) . '" class="user_avatar" alt="user_avatar" width="40" height="40" class="rounded-circle">';
                         }
                         ?>
-                    </div>
+                </div>
                 <button class="navbar-toggler navbarbutton" type="button" onclick="toggleSidebar()">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -131,7 +129,7 @@ $currentRole = $userInfo['role_id'] ?? null;
             if($userInfo['role_id'] == "HD"){
                 echo '
                 <li class="nav-item">
-                    <a class="nav-link" href="nopbai.php">
+                    <a class="nav-link active" href="nopbai.php">
                         <i class="bi bi-bar-chart"></i> Chấm điểm
                     </a>
                 </li>
@@ -148,20 +146,11 @@ $currentRole = $userInfo['role_id'] ?? null;
                     <thead>
                         <tr>
                             <?php
-                                    '<th colspan="7" style="position:relative; border: none;">'
+                                    '<th colspan="5" style="position:relative; border: none;">'
                                 ?>
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h1 class="mb-0" style="flex: 1; text-align: center; padding-top: 10px;">Danh sách đề tài yêu cầu phúc khảo</h1>
-                                
-                                <?php
-                                if($currentRole === "TK"){
-                                    echo '<h6 class="text-muted" style="position: absolute;right: 50px;">Chức vụ: Thư ký</h6>';
-                                }else if($currentRole === "GV"){
-                                    echo '<h6 class="text-muted" style="position: absolute;right: 50px;">Chức vụ: Giảng viên</h6>';
-                                }else{
-                                    echo '<h6 class="text-muted" style="position: absolute;right: 50px;">Chức vụ: Hội đồng</h6>';
-                                }     
-                                ?>
+                                <h1 class="mb-0" style="flex: 1; text-align: center; padding-top: 10px;">Danh sách đề
+                                    tài đã được nộp</h1>
                             </div>
                             <div class="input-group w-50 mx-auto" style="padding-bottom: 5px;">
                                 <input type="search" class="form-control rounded"
@@ -173,108 +162,68 @@ $currentRole = $userInfo['role_id'] ?? null;
                         </tr>
                         <tr class="table-primary">
                             <th class="text-center align-middle" width="80" class="text-center">ID đề tài</th>
-                            <th class="text-center align-middle" width="80" class="text-center">ID phúc khảo</th>
                             <th class="text-center align-middle">Tên đề tài</th>
+                            <th class="text-center align-middle">Nhóm đăng ký</th>
                             <th class="text-center align-middle">Giảng viên quản lý</th>
-                            <th class="text-center align-middle" >Tiêu đề phúc khảo</th>
+                            <th class="text-center align-middle">Trạng thái</th>
                             <th class="text-center align-middle" width="150" class="text-center">Chi tiết</th>
-                            <th class="text-center align-middle" width="180" class="text-center">Chấp nhận/Từ chối</th>
                         </tr>
                     </thead>
-                    <tbody id="reevaluationContent"></tbody>
+                    <tbody id="projectContainer"></tbody>
                 </table>
             </div>
         </div>
     </main>
-
+    
     <script>
-        getProjects(<?php echo isset($currentRole) ? json_encode($currentRole) : 'null'; ?>);
-
-        async function getProjects(userRole){
+        getSubmittedPJ();
+        async function getSubmittedPJ(){
             try{
-                const response = await fetch(`../controller/reevaluationAction.php?action=getProjects&role_id=${userRole}`);
+                const response = await fetch(`../controller/nopbaiAction.php?action=getSubmittedPJ`);
                 const result = await response.json();
+                console.log(result.project);
                 if(result.success){
-                    renderProject(result.projects);
+                    renderSubmittedPJ(result.project);
                 }else{
                     console.log(result.message);
                 }
             }catch(err){
-                console.log("Lỗi khi lấy đề tài",err);
+                console.log("Lỗi",err);
             }
         }
 
-        function renderProject(projects){
-            const projectContent = document.getElementById('reevaluationContent');
-            projectContent.innerHTML = '';
-            const currentRole = <?php echo isset($currentRole) ? json_encode($currentRole) : 'null'; ?>;
-            
-            projects.forEach(project => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
+        function renderSubmittedPJ(projects){
+            try{
+                const projectContainer = document.getElementById('projectContainer');
+                projectContainer.innerHTML = '';
+                projects.forEach(project => {
+                    const row = document.createElement('tr');
+                    const status = getStatus(project.status);
+                    row.innerHTML = `
                     <td class="text-muted text-center">${project.project_id}</td>
-                    <td class="text-muted text-center">${project.revaluation_id}</td>
                     <td class="text-muted text-center">${project.projectname}</td>
-                    <td class="text-muted text-center">${project.lecturer_fullname}</td>
-                    <td class="text-muted text-center">${project.revaluation_title}</td>
+                    <td class="text-muted text-center">${project.groupname}</td>
+                    <td class="text-muted text-center">${project.fullname}</td>
+                    <td class="text-muted text-center">${status}</td>
                     <td class="text-muted text-center">
-                        <a href="deadlinePK.php?project_id=${project.project_id}&group_id=${project.group_id}" class="detailBtn btn btn-primary btn-sm">Xem chi tiết</a>
-                    </td>
-                    <td class="text-center">
-                        <button class="acceptBtn btn btn-success btn-sm" onclick="accHandle('${currentRole}', '${project.project_id}', '${project.group_id}')">
-                            <i class="bi bi-check"></i>
-                        </button>
-                        <button class="declineBtn btn btn-danger btn-sm" onclick="cancelHandle('${currentRole}', '${project.project_id}', '${project.group_id}')">
-                            <i class="bi bi-x"></i>
-                        </button>
+                        <a href="deadlinePK.php?project_id=${project.project_id}&group_id=${project.group_id}&action=nopbai" class="detailBtn btn btn-primary btn-sm">Xem chi tiết</a>
                     </td>
                 `;
-                projectContent.appendChild(row);
-            });
-        }
-
-        async function accHandle(role_id, project_id, group_id){
-            const isConfirmed = confirm("Bạn có chắc muốn DUYỆT yêu cầu phúc khảo này không?");
-            
-            if (!isConfirmed) {
-                return; 
-            }
-            
-            try {
-                const response = await fetch(`../controller/reevaluationAction.php?action=accProject&role_id=${role_id}&project_id=${project_id}&group_id=${group_id}`);
-                const result = await response.json();
-                
-                if(result.success){
-                    alert('✅ ' + result.message);
-                    location.reload(); 
-                } else {
-                    alert('❌ ' + result.message);
-                }
-            } catch(err) {
-                console.log("Lỗi", err);
-                alert('❌ Lỗi kết nối server');
-            }
-        }
-        
-        async function cancelHandle(role_id,project_id,group_id){
-
-            const isConfirmed = confirm("Bạn có chắc muốn XÓA yêu cầu phúc khảo này không?");
-            
-            if (!isConfirmed) {
-                return; 
-            }
-
-            try{
-                const response = await fetch(`../controller/reevaluationAction.php?action=cancelProject&role_id=${role_id}&project_id=${project_id}&group_id=${group_id}`);
-                const result = await response.json();
-                if(result.success){
-                    alert(result.message);
-                    document.location.reload();
-                }else{
-                    alert(result.message);
-                }
+                projectContainer.appendChild(row);
+                });
             }catch(err){
-                console.log("Lỗi",err);
+                console.log("lỗi",err);
+            }
+        }
+
+        function getStatus(status){
+            switch(status){
+                case 'submitted':
+                    return 'Đang chờ chấm điểm';
+                    break;
+                case 'completed':
+                    return 'Đã chấm điểm';
+                    break;
             }
         }
     </script>

@@ -178,8 +178,7 @@ function getCompletedTasks($project_id, $group_id){
 
 function submitProject($project_id, $group_id){
     global $pdo;
-    try{
-
+    try {
         $checkQuery = 'SELECT project_id FROM projectdetail WHERE project_id = ? AND group_id = ?';
         $checkStmt = $pdo->prepare($checkQuery);
         $checkStmt->execute([$project_id, $group_id]);
@@ -193,18 +192,25 @@ function submitProject($project_id, $group_id){
             return;
         }
 
-        $updateQuery = 'UPDATE projectdetail SET status = "submitted" WHERE project_id = ? AND group_id = ?';
+        $updateQuery = 'UPDATE projectdetail SET status = "submitted", submitted_at = NOW() WHERE project_id = ? AND group_id = ?';
         $updateStmt = $pdo->prepare($updateQuery);
         $updateStmt->execute([$project_id, $group_id]);
         
-        echo json_encode([
-            'success' => true,
-            'message' => 'Nộp đề tài thành công',
-            'project_id' => $project_id,
-            'status' => 'submitted'
-        ]);
+        if ($updateStmt->rowCount() > 0) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Nộp đề tài thành công',
+                'project_id' => $project_id,
+                'status' => 'submitted'
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Không thể cập nhật trạng thái đề tài'
+            ]);
+        }
         
-    } catch(Exception $e){
+    } catch(Exception $e) {
         echo json_encode([
             'success' => false,
             'message' => 'Lỗi khi nộp đề tài: ' . $e->getMessage()
@@ -289,7 +295,7 @@ function reEvalutionBtn($project_id, $group_id){
             $checkReEvalStmt->execute([$project_id, $group_id]);
             $currentStatus = $checkReEvalStmt->fetch(PDO::FETCH_ASSOC);
             
-            if ($currentStatus && $currentStatus['re_evaluation'] === 'in_progress') {
+            if ($currentStatus && ($currentStatus['re_evaluation'] === 'pending' || $currentStatus['re_evaluation'] === 'in_progress')) {
                 echo json_encode([
                     'success' => false,
                     'message' => 'Đã có yêu cầu phúc khảo đang được xử lý'
@@ -297,12 +303,12 @@ function reEvalutionBtn($project_id, $group_id){
                 return;
             }
 
-            $insertReEvalQuery = 'INSERT INTO reevalutiondetail (title,description,project_id, group_id, request_date) 
-                                VALUES (?,?,?, ?, NOW())';
+            $insertReEvalQuery = 'INSERT INTO reevalutiondetail (title, description, project_id, group_id, request_date, status) 
+                                VALUES (?, ?, ?, ?, NOW(), "pending")';
             $insertStmt = $pdo->prepare($insertReEvalQuery);
-            $insertStmt->execute([$title,$description,$project_id, $group_id]);
+            $insertStmt->execute([$title, $description, $project_id, $group_id]);
 
-            $updateQuery = 'UPDATE projectdetail SET re_evaluation = "in_progress" WHERE project_id = ? AND group_id = ?';
+            $updateQuery = 'UPDATE projectdetail SET re_evaluation = "pending" WHERE project_id = ? AND group_id = ?';
             $updateStmt = $pdo->prepare($updateQuery);
             $updateStmt->execute([$project_id, $group_id]);
             
@@ -311,7 +317,7 @@ function reEvalutionBtn($project_id, $group_id){
                     'success' => true,
                     'message' => 'Đã gửi yêu cầu đánh giá lại thành công',
                     'project_id' => $project_id,
-                    're_evaluation_status' => 'in_progress'
+                    're_evaluation_status' => 'pending'
                 ]);
             } else {
                 echo json_encode([
@@ -328,4 +334,5 @@ function reEvalutionBtn($project_id, $group_id){
         }
     }
 }
+
 ?>

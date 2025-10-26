@@ -130,16 +130,28 @@ $groups = $stmt->fetch(PDO::FETCH_ASSOC);
                 ';
             }
             ?>
-            <li class="nav-item">
-                <a class="nav-link" href="../app/views/re-evaluation.php">
-                    <i class="bi bi-chat-dots"></i> Phúc khảo
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="../app/views/report.php">
-                    <i class="bi bi-bar-chart"></i> Báo cáo
-                </a>
-            </li>
+            <?php
+            if(!($userInfo['role_id'] == "SV")){
+                echo '
+                    <li class="nav-item">
+                        <a class="nav-link" href="../app/views/re-evaluation.php">
+                            <i class="bi bi-chat-dots"></i> Phúc khảo
+                        </a>
+                    </li>   
+                ';
+            }
+            ?>
+            <?php
+            if($userInfo['role_id'] == "HD"){
+                echo '
+                <li class="nav-item">
+                    <a class="nav-link" href="../app/views/nopbai.php">
+                        <i class="bi bi-bar-chart"></i> Nộp bài
+                    </a>
+                </li>
+                ';
+            }
+            ?>
         </ul>
     </aside>
 

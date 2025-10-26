@@ -6,7 +6,6 @@ require_once '../core/getUser.php';
 
 $group_id = $userInfo['group_id'] ?? null;
 $project_id = $userInfo['project_id'] ?? null;
-
 ?>
 
 <!DOCTYPE html>
@@ -124,16 +123,28 @@ $project_id = $userInfo['project_id'] ?? null;
                 ';
             }
             ?>
-            <li class="nav-item">
-                <a class="nav-link" href="re-evaluation.php">
-                    <i class="bi bi-chat-dots"></i> Phúc khảo
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="report.php">
-                    <i class="bi bi-bar-chart"></i> Báo cáo
-                </a>
-            </li>
+            <?php
+            if(!($userInfo['role_id'] == "SV")){
+                echo '
+                    <li class="nav-item">
+                        <a class="nav-link" href="re-evaluation.php">
+                            <i class="bi bi-chat-dots"></i> Phúc khảo
+                        </a>
+                    </li>   
+                ';
+            }
+            ?>
+            <?php
+            if($userInfo['role_id'] == "HD"){
+                echo '
+                <li class="nav-item">
+                    <a class="nav-link" href="nopbai.php">
+                        <i class="bi bi-bar-chart"></i> Chấm điểm
+                    </a>
+                </li>
+                ';
+            }
+            ?>
         </ul>
     </aside>
 
@@ -192,7 +203,7 @@ $project_id = $userInfo['project_id'] ?? null;
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h4 class="modal-title">Thông tin đề tài</h4>
+                        <h4 class="modal-title">Thông tin công việc</h4>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">

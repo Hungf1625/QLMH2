@@ -176,16 +176,28 @@ $currentGroupProject = $stmt->fetch(PDO::FETCH_ASSOC);
                 ';
             }
             ?>
-            <li class="nav-item">
-                <a class="nav-link" href="../views/re-evaluation.php">
-                    <i class="bi bi-chat-dots"></i> Phúc khảo
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="../views/report.php">
-                    <i class="bi bi-bar-chart"></i> Báo cáo
-                </a>
-            </li>
+            <?php
+            if(!($userInfo['role_id'] == "SV")){
+                echo '
+                    <li class="nav-item">
+                        <a class="nav-link" href="re-evaluation.php">
+                            <i class="bi bi-chat-dots"></i> Phúc khảo
+                        </a>
+                    </li>   
+                ';
+            }
+            ?>
+            <?php
+            if($userInfo['role_id'] == "HD"){
+                echo '
+                <li class="nav-item">
+                    <a class="nav-link" href="nopbai.php">
+                        <i class="bi bi-bar-chart"></i> Chấm điểm
+                    </a>
+                </li>
+                ';
+            }
+            ?>
         </ul>
     </aside>
 
