@@ -94,11 +94,11 @@ $currentUser = $stmt->fetch(PDO::FETCH_ASSOC);
             </div>
             <div class="dropdown-body">
                 <a href="profileEdit.php" class="dropdown-item d-block p-3 border-bottom">
-                    <i class="bi bi-person me-2"></i>Thông tin cá nhân
+                    <i class="bi bi-person me-2"></i>Chỉnh sửa thông tin cá nhân
                 </a>
-                <a href="help.html" class="dropdown-item d-block p-3 border-bottom">
+                <!-- <a href="help.html" class="dropdown-item d-block p-3 border-bottom">
                     <i class="bi bi-question-circle me-2"></i>Trợ giúp
-                </a>
+                </a> -->
                 <a href="../controller/logout.php" class="dropdown-item d-block p-3 text-danger">
                     <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
                 </a>

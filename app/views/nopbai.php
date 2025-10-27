@@ -15,7 +15,7 @@ require_once '../core/getUser.php';
     <title>Quản lý thư viện DNC</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="../../public/assets/style.css">
+    <link rel="stylesheet" href="../../public/assets/style_test.css">
     <script src="../../public/assets/script_test.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -66,11 +66,11 @@ require_once '../core/getUser.php';
             </div>
             <div class="dropdown-body">
                 <a href="profileEdit.php" class="dropdown-item d-block p-3 border-bottom">
-                    <i class="bi bi-person me-2"></i>Thông tin cá nhân
+                    <i class="bi bi-person me-2"></i>Chỉnh sửa thông tin cá nhân
                 </a>
-                <a href="help.html" class="dropdown-item d-block p-3 border-bottom">
-                    <i class="bi bi-question-circle me-2"></i>Trợ giúp
-                </a>
+                <!-- <a href="help.html" class="dropdown-item d-block p-3 border-bottom">
+                   <i class="bi bi-question-circle me-2"></i>Trợ giúp
+                </a>  -->
                 <a href="../controller/logout.php" class="dropdown-item d-block p-3 text-danger">
                     <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
                 </a>

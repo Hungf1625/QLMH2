@@ -74,8 +74,6 @@ $currentGroupProject = $stmt->fetch(PDO::FETCH_ASSOC);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="<?= $base_url ?>/public/assets/style_test.css">
-    <link rel="stylesheet" href="<?= $base_url ?>/public/assets/style.css">
-
     <script src="<?= $base_url ?>/public/assets/script_test.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <style>
@@ -227,9 +225,9 @@ $currentGroupProject = $stmt->fetch(PDO::FETCH_ASSOC);
                 <a href="<?= $base_url ?>/app/views/profileEdit.php" class="dropdown-item d-block p-3 border-bottom">
                     <i class="bi bi-person me-2"></i>Chỉnh sửa thông tin cá nhân
                 </a>
-                <a href="help.php" class="dropdown-item d-block p-3 border-bottom">
+                <!-- <a href="help.php" class="dropdown-item d-block p-3 border-bottom">
                     <i class="bi bi-question-circle me-2"></i>Trợ giúp
-                </a>
+                </a> -->
                 <a href="<?= $base_url ?>/app/controller/logout.php" class="dropdown-item d-block p-3 text-danger">
                     <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
                 </a>
