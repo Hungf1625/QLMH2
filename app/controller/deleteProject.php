@@ -40,7 +40,7 @@ function deleteProject(){
             throw new Exception('Không tìm thấy đề tài');
         }
 
-        $deleteQuery = 'DELETE FROM projectdetail WHERE project_id = ? AND user_id = ?';
+        $deleteQuery = 'UPDATE projectdetail SET status = "canceled", group_id = "none" WHERE project_id = ? AND user_id = ?';
         $deleteStmt = $pdo->prepare($deleteQuery);
         $deleteStmt->execute([$project_id, $_SESSION['user_id']]);
 
@@ -79,7 +79,6 @@ function deleteGroup(){
             throw new Exception('Không tìm thấy đề tài');
         }
 
-        // THÊM: Update cả group_id và status về pending
         $updateQuery = 'UPDATE projectdetail SET group_id = NULL, status = "pending" WHERE project_id = ?';
         $updateStmt = $pdo->prepare($updateQuery);
         $updateStmt->execute([$project_id]);

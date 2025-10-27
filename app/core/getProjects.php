@@ -8,6 +8,7 @@ try {
     $query = "SELECT PD.*, U.fullname 
               FROM projectdetail PD
               INNER JOIN users U ON PD.user_id = U.id
+              WHERE status != 'canceled'
               ORDER BY PD.created_at ";
     $stmt = $pdo->prepare($query);
     $stmt->execute();

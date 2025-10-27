@@ -387,7 +387,7 @@ require_once '../core/getUser.php';
                 document.getElementById('Name').innerHTML = result.projects.projectname;
                 document.getElementById('Description').innerHTML = result.projects.description;
                 document.getElementById('Lecturer').innerHTML = result.projects.fullname;
-                if (!(result.projects.group_id == 0)) {
+                if (!(result.projects.group_id == "none")) {
                     document.getElementById('Group').innerHTML = result.projects.groupname;
                 } else {
                     document.getElementById('Group').innerHTML = 'Chưa có nhóm đăng ký';
