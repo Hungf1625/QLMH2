@@ -153,10 +153,16 @@ require_once '../core/getUser.php';
                                     tài đã được nộp</h1>
                             </div>
                             <div class="input-group w-50 mx-auto" style="padding-bottom: 5px;">
-                                <input type="search" class="form-control rounded"
-                                    placeholder="Nhập mã nhóm hoặc tên nhóm" aria-label="Search"
-                                    aria-describedby="search-addon" />
-                                <button type="button" class="btn btn-outline-primary">Tìm kiếm</button>
+                                <input type="search" 
+                                    class="form-control rounded" 
+                                    id="searchInput"
+                                    placeholder="Nhập tên đề tài hoặc tên giảng viên" 
+                                    aria-label="Search"/>
+                                <button type="button" 
+                                        class="btn btn-outline-primary" 
+                                        onclick="searchProjects()">
+                                    <i class="bi bi-search"></i> Tìm kiếm
+                                </button>
                             </div>
                             </th>
                         </tr>
@@ -176,14 +182,53 @@ require_once '../core/getUser.php';
     </main>
     
     <script>
-        getSubmittedPJ();
+        let allSubmittedPJ = [];
+        document.addEventListener('DOMContentLoaded', ()=>{
+            getSubmittedPJ();
+        })
+
+        function searchProjects() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (!allSubmittedPJ || !Array.isArray(allSubmittedPJ)) {
+                console.error('No projects data available');
+                return;
+            }
+
+            if (!searchTerm) {
+                renderSubmittedPJ(allSubmittedPJ);
+                return;
+            }
+
+            const filteredProjects = allSubmittedPJ.filter(project => {
+                return (
+                    (project.project_id && String(project.project_id).includes(searchTerm)) ||
+                    (project.projectname && project.projectname.toLowerCase().includes(searchTerm)) ||
+                    (project.groupname && project.groupname.toLowerCase().includes(searchTerm)) ||
+                    (project.fullname && project.fullname.toLowerCase().includes(searchTerm))
+                );
+            });
+
+            renderSubmittedPJ(filteredProjects);
+        }
+
+        document.getElementById('searchInput').addEventListener('input', () => {
+            searchProjects();
+        });
+
+        document.getElementById('searchInput').addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                searchProjects();
+            }
+        });
+
         async function getSubmittedPJ(){
             try{
                 const response = await fetch(`../controller/nopbaiAction.php?action=getSubmittedPJ`);
                 const result = await response.json();
-                console.log(result.project);
                 if(result.success){
-                    renderSubmittedPJ(result.project);
+                    allSubmittedPJ = result.project;
+                    renderSubmittedPJ(allSubmittedPJ);
                 }else{
                     console.log(result.message);
                 }
@@ -196,6 +241,21 @@ require_once '../core/getUser.php';
             try{
                 const projectContainer = document.getElementById('projectContainer');
                 projectContainer.innerHTML = '';
+
+                if(!projects || projects.length === 0) {
+                    projectContent.innerHTML = `
+                        <tr>
+                            <td colspan="${currentRole !== 'HD' ? '7' : '6'}" class="text-center py-3">
+                                <div class="text-muted">
+                                    <i class="bi bi-search"></i>
+                                    <p class="mb-0">Không tìm thấy đề tài nào</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
                 projects.forEach(project => {
                     const row = document.createElement('tr');
                     const status = getStatus(project.status);

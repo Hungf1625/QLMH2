@@ -167,11 +167,17 @@ $currentRole = $userInfo['role_id'] ?? null;
                                 }     
                                 ?>
                             </div>
-                            <div class="input-group w-50 mx-auto" style="padding-bottom: 5px;">
-                                <input type="search" class="form-control rounded"
-                                    placeholder="Nhập mã nhóm hoặc tên nhóm" aria-label="Search"
-                                    aria-describedby="search-addon" />
-                                <button type="button" class="btn btn-outline-primary">Tìm kiếm</button>
+                            <div class="input-group w-50 mx-auto">
+                                <input type="search" 
+                                    class="form-control rounded" 
+                                    id="searchInput"
+                                    placeholder="Nhập mã đề tài hoặc tên đề tài" 
+                                    aria-label="Search"/>
+                                <button type="button" 
+                                        class="btn btn-outline-primary"
+                                        onclick="searchProjects()">
+                                    <i class="bi bi-search"></i> Tìm kiếm
+                                </button>
                             </div>
                             </th>
                         </tr>
@@ -195,14 +201,44 @@ $currentRole = $userInfo['role_id'] ?? null;
     </main>
 
     <script>
+        let allProjects = []; 
         getProjects(<?php echo isset($currentRole) ? json_encode($currentRole) : 'null'; ?>);
+
+        function searchProjects() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    
+            if (!searchTerm) {
+                renderProject(allProjects);
+                return;
+            }
+
+            const filteredProjects = allProjects.filter(project => 
+                String(project.project_id).includes(searchTerm) ||
+                project.projectname?.toLowerCase().includes(searchTerm) ||
+                project.lecturer_fullname?.toLowerCase().includes(searchTerm) ||
+                project.revaluation_title?.toLowerCase().includes(searchTerm)
+            );
+
+            renderProject(filteredProjects);
+        }
+
+        document.getElementById('searchInput').addEventListener('input', () => {
+            searchProjects();
+        });
+
+        document.getElementById('searchInput').addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                searchProjects();
+            }
+        });
 
         async function getProjects(userRole){
             try{
                 const response = await fetch(`../controller/reevaluationAction.php?action=getProjects&role_id=${userRole}`);
                 const result = await response.json();
                 if(result.success){
-                    renderProject(result.projects);
+                    allProjects = result.projects;
+                    renderProject(allProjects);
                 }else{
                     console.log(result.message);
                 }
@@ -215,6 +251,20 @@ $currentRole = $userInfo['role_id'] ?? null;
             const projectContent = document.getElementById('reevaluationContent');
             projectContent.innerHTML = '';
             const currentRole = <?php echo isset($currentRole) ? json_encode($currentRole) : 'null'; ?>;
+
+            if(!projects || projects.length === 0) {
+                projectContent.innerHTML = `
+                    <tr>
+                        <td colspan="${currentRole !== 'HD' ? '7' : '6'}" class="text-center py-3">
+                            <div class="text-muted">
+                                <i class="bi bi-search"></i>
+                                <p class="mb-0">Không tìm thấy đề tài nào</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
             
             projects.forEach(project => {
                 const row = document.createElement('tr');
